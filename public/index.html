@@ -95,7 +95,11 @@
         </div>
         <div class="panel map-panel">
           <div class="map-head"><strong id="map-store-name">판매소를 선택해 주세요</strong><span id="map-address">목록에서 판매소를 누르면 지도를 보여드려요.</span></div>
-          <iframe id="store-map" title="판매소 지도" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          <div id="tile-map" class="tile-map" role="img" aria-label="판매소 위치 지도">
+            <div id="map-tiles" class="map-tiles" aria-hidden="true"></div>
+            <div class="map-marker" aria-hidden="true"></div>
+            <div class="map-attribution"><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap</a></div>
+          </div>
           <div id="map-placeholder" class="map-placeholder"><span>⌖</span><strong>판매소 위치</strong><small>목록에서 한 곳을 선택해 주세요.</small></div>
           <a id="map-directions" class="btn secondary directions" target="_blank" rel="noopener" hidden>길찾기 열기</a>
         </div>

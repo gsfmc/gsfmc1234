@@ -106,6 +106,7 @@ async function loadStores(){
     $("store-source").innerHTML='출처: <a href="'+esc(data.sourceUrl)+'" target="_blank" rel="noopener">공공데이터포털 전국종량제봉투판매소표준데이터</a> · 기준일 '+esc(data.referenceDate||"확인 필요")+' · 영업 중 '+stores.length+'곳';
     $("location-status").textContent=stores.length?"판매소를 선택하거나 현재 위치 기준으로 가까운 곳을 찾아보세요.":"광산구 영업 중 판매소가 확인되지 않았어요.";
     renderStores();
+    if(stores.length&&selectedStore===null)selectStore(0);
   }catch{$("store-list").innerHTML='<div class="empty-panel"><strong>판매소 자료를 불러오지 못했어요</strong><p>잠시 후 다시 시도해 주세요.</p></div>';$("location-status").textContent="공공데이터 연결을 확인하지 못했어요."}
 }
 function renderStores(){
@@ -113,7 +114,36 @@ function renderStores(){
   $("store-list").innerHTML=list.map(s=>'<button class="store-item '+(selectedStore===s.index?"active":"")+'" type="button" data-store="'+s.index+'"><span><strong>'+esc(s.name)+'</strong><span>'+esc(s.address)+'</span><span>대형폐기물 스티커 · '+esc(s.sticker||"정보 없음")+(s.phone?" · "+esc(s.phone):"")+'</span></span><em>'+(s.km==null?"지도 보기":distanceLabel(s.km))+'</em></button>').join("");
 }
 $("store-list").addEventListener("click",e=>{const b=e.target.closest("[data-store]");if(!b)return;selectStore(Number(b.dataset.store))});
-function selectStore(i){const s=stores[i];if(!s)return;selectedStore=i;$("map-store-name").textContent=s.name;$("map-address").textContent=s.address;$("store-map").src="https://www.google.com/maps?q="+encodeURIComponent(s.address)+"&output=embed";$("map-placeholder").hidden=true;$("map-directions").href="https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(s.address);$("map-directions").hidden=false;renderStores()}
+function renderTileMap(lat,lon){
+  const map=$("tile-map"),tiles=$("map-tiles"),zoom=16,n=2**zoom;
+  const x=(Number(lon)+180)/360*n;
+  const rad=Number(lat)*Math.PI/180;
+  const y=(1-Math.asinh(Math.tan(rad))/Math.PI)/2*n;
+  const tileX=Math.floor(x),tileY=Math.floor(y),baseX=tileX-1,baseY=tileY-1;
+  let html="";
+  for(let row=0;row<3;row++)for(let col=0;col<3;col++){
+    const tx=(baseX+col+n)%n,ty=Math.max(0,Math.min(n-1,baseY+row));
+    html+='<img src="https://tile.openstreetmap.org/'+zoom+'/'+tx+'/'+ty+'.png" alt="" loading="eager" referrerpolicy="no-referrer">';
+  }
+  tiles.innerHTML=html;
+  requestAnimationFrame(()=>{
+    tiles.style.left=map.clientWidth/2-(x-baseX)*256+"px";
+    tiles.style.top=map.clientHeight/2-(y-baseY)*256+"px";
+  });
+}
+function selectStore(i){
+  const s=stores[i];if(!s)return;
+  selectedStore=i;
+  $("map-store-name").textContent=s.name;
+  $("map-address").textContent=s.address;
+  $("tile-map").setAttribute("aria-label",s.name+" 위치 지도");
+  if(Number.isFinite(Number(s.lat))&&Number.isFinite(Number(s.lon)))renderTileMap(s.lat,s.lon);
+  $("map-placeholder").hidden=true;
+  const destination=s.lat&&s.lon?s.lat+","+s.lon:s.address;
+  $("map-directions").href="https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(destination);
+  $("map-directions").hidden=false;
+  renderStores();
+}
 $("use-location").addEventListener("click",()=>{if(!navigator.geolocation){$("location-status").textContent="이 기기에서는 위치를 사용할 수 없어요.";return}$("location-status").textContent="현재 위치를 확인하고 있어요…";navigator.geolocation.getCurrentPosition(p=>{userPoint={lat:p.coords.latitude,lon:p.coords.longitude};$("location-status").textContent="현재 위치 기준 가까운 순입니다. 거리는 직선거리예요.";renderStores()},()=>{$("location-status").textContent="위치 권한을 사용할 수 없어요. 주소로 찾아보세요."},{timeout:10000,maximumAge:300000})});
 async function geocodeAddress(){
   const q=$("address-input").value.trim();if(!q){$("location-status").textContent="광산구 주소나 동 이름을 입력해 주세요.";return}
@@ -121,4 +151,5 @@ async function geocodeAddress(){
   try{const res=await fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=kr&accept-language=ko&q="+encodeURIComponent("광주광역시 광산구 "+q));const data=await res.json();if(!data.length)throw new Error();userPoint={lat:Number(data[0].lat),lon:Number(data[0].lon)};$("location-status").textContent="입력한 주소 기준 가까운 순입니다. 거리는 직선거리예요.";renderStores()}catch{$("location-status").textContent="주소를 찾지 못했어요. 도로명주소로 다시 입력해 주세요."}
 }
 $("search-address").addEventListener("click",geocodeAddress);$("address-input").addEventListener("keydown",e=>{if(e.key==="Enter")geocodeAddress()});
+addEventListener("resize",()=>{if(selectedStore!==null){const s=stores[selectedStore];if(s)renderTileMap(s.lat,s.lon)}});
 loadStores();
