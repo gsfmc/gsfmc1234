@@ -1,5 +1,4 @@
-const DATASET_PK="15114144";
-const DATASET_URL="https://www.data.go.kr/data/15114144/standard.do";
+const STATIC_STORES=null;
 const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{"content-type":"application/json; charset=utf-8","cache-control":"no-store"}});
 
 export default {
@@ -65,54 +64,9 @@ async function analyze(request,env){
   try{return json(JSON.parse(text))}catch{return json({message:"AI 응답을 읽지 못했어요. 다시 촬영해 주세요."},502)}
 }
 
-async function stores(request,ctx){
-  const cache=typeof caches!=="undefined"?caches.default:null;
-  const cacheKey=new Request(new URL("/api/stores-cache-v2",request.url));
-  if(cache){const hit=await cache.match(cacheKey);if(hit)return hit}
-  try{
-    const headers={"accept":"application/json","user-agent":"GwangsanWasteGuide/1.0"};
-    const metaRes=await fetch("https://www.data.go.kr/download/columList.json?pk="+DATASET_PK+"&ext=JSON",{headers});
-    if(!metaRes.ok)throw new Error("meta");
-    const meta=await metaRes.json();
-    const columns=meta?.tableVO?.colNmList||[];
-    const table=meta?.tableVO?.svcTableNm;
-    const total=Number(meta?.totalCount||0);
-    if(!columns.length||!table||!total)throw new Error("contract");
-    const labels={};
-    for(const c of meta.columList||[])labels[c.columCode]=c.columNm;
-    const pages=Math.min(Math.ceil(total/10000),20);
-    let matched=[];
-    for(let page=1;page<=pages;page++){
-      const q=new URLSearchParams({publicDataPk:DATASET_PK,totalCount:String(total),svcTableNm:table,perPage:"10000",page:String(page)});
-      columns.forEach(c=>q.append("colNmList",c));
-      const r=await fetch("https://www.data.go.kr/download/standard.json?"+q.toString(),{headers});
-      if(!r.ok)throw new Error("rows");
-      const rows=await r.json();
-      if(!Array.isArray(rows))throw new Error("shape");
-      for(const raw of rows){
-        const row={};for(const [k,v] of Object.entries(raw))row[labels[k]||k]=v;
-        const city=String(row["시도명"]||row["시·도명"]||"");
-        const district=String(row["시군구명"]||row["시·군·구명"]||"");
-        const provider=String(row["제공기관명"]||"");
-        const status=String(row["영업상태명"]||"");
-        if(district.includes("광산구")&&(city.includes("광주")||provider.includes("광산구"))&&(!status||status.includes("영업")))matched.push(row);
-      }
-    }
-    const dedup=new Map();
-    for(const r of matched){
-      const name=String(r["판매소명"]||"이름 미등록").trim();
-      const address=String(r["소재지도로명주소"]||r["소재지지번주소"]||"").trim();
-      if(!address)continue;
-      const item={name,address,lat:number(r["위도"]),lon:number(r["경도"]),sticker:normalizeYesNo(r["대형폐기물스티커판매여부"]),phone:String(r["전화번호"]||"").trim(),referenceDate:String(r["데이터기준일자"]||"").trim()};
-      dedup.set(name+"|"+address,item);
-    }
-    const items=[...dedup.values()];
-    const referenceDate=items.map(x=>x.referenceDate).filter(Boolean).sort().at(-1)||"";
-    const response=json({items,referenceDate,sourceUrl:DATASET_URL});
-    response.headers.set("cache-control","public, max-age=21600");
-    if(cache)ctx.waitUntil(cache.put(cacheKey,response.clone()));
-    return response;
-  }catch(error){return json({message:"공공데이터를 불러오지 못했습니다.",sourceUrl:DATASET_URL},502)}
+async function stores(){
+  if(!STATIC_STORES)return json({message:"판매소 데이터가 준비되지 않았습니다."},503);
+  const response=json(STATIC_STORES);
+  response.headers.set("cache-control","public, max-age=21600");
+  return response;
 }
-function number(v){const n=Number(v);return Number.isFinite(n)&&n!==0?n:null}
-function normalizeYesNo(v){const s=String(v||"").trim();if(!s)return"정보 없음";return /^(Y|예|가능|판매)$/i.test(s)?"예":/^(N|아니오|불가|미판매)$/i.test(s)?"아니오":s}
