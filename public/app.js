@@ -5,6 +5,7 @@ function openView(id,push=true){
   document.querySelectorAll(".view").forEach(v=>v.hidden=v.id!==id);
   document.querySelectorAll("[data-open]").forEach(b=>b.classList.toggle("active",b.dataset.open===id&&b.closest(".bottom-nav")));
   if(push&&location.hash!=="#"+id)history.pushState({id},"","#"+id);
+  if(id==="stores")dispatchEvent(new Event("stores-view-open"));
 }
 document.querySelectorAll("[data-open]").forEach(b=>b.addEventListener("click",e=>{e.preventDefault();openView(b.dataset.open)}));
 addEventListener("popstate",()=>openView(location.hash.slice(1)||"home",false));
@@ -114,14 +115,42 @@ function renderStores(){
   $("store-list").innerHTML=list.map(s=>'<button class="store-item '+(selectedStore===s.index?"active":"")+'" type="button" data-store="'+s.index+'"><span><strong>'+esc(s.name)+'</strong><span>'+esc(s.address)+'</span><span>대형폐기물 스티커 · '+esc(s.sticker||"정보 없음")+(s.phone?" · "+esc(s.phone):"")+'</span></span><em>'+(s.km==null?"지도 보기":distanceLabel(s.km))+'</em></button>').join("");
 }
 $("store-list").addEventListener("click",e=>{const b=e.target.closest("[data-store]");if(!b)return;selectStore(Number(b.dataset.store))});
+let mapPosition=null,mapRenderToken=0;
+function positionMapTiles(){
+  if(!mapPosition)return;
+  const map=$("tile-map"),tiles=$("map-tiles");
+  if(!map.clientWidth||!map.clientHeight)return;
+  const {x,y,baseX,baseY}=mapPosition;
+  tiles.style.left=map.clientWidth/2-(x-baseX)*256+"px";
+  tiles.style.top=map.clientHeight/2-(y-baseY)*256+"px";
+}
+function renderTileMap(lat,lon){
+  const zoom=15,n=2**zoom;
+  const x=(Number(lon)+180)/360*n;
+  const rad=Number(lat)*Math.PI/180;
+  const y=(1-Math.asinh(Math.tan(rad))/Math.PI)/2*n;
+  const baseX=Math.floor(x)-1,baseY=Math.floor(y)-1;
+  const tiles=$("map-tiles"),token=++mapRenderToken;
+  mapPosition={x,y,baseX,baseY};
+  tiles.replaceChildren();tiles.hidden=false;$("map-error").hidden=true;
+  for(let row=0;row<3;row++)for(let col=0;col<3;col++){
+    const tileX=(baseX+col+n)%n,tileY=Math.max(0,Math.min(n-1,baseY+row));
+    const img=new Image();img.alt="";img.loading="eager";img.referrerPolicy="origin";
+    img.addEventListener("error",()=>{if(token!==mapRenderToken)return;tiles.hidden=true;$("map-error").hidden=false},{once:true});
+    tiles.append(img);
+    img.src="https://tile.openstreetmap.org/"+zoom+"/"+tileX+"/"+tileY+".png";
+  }
+  requestAnimationFrame(positionMapTiles);
+}
 function selectStore(i){
   const s=stores[i];if(!s)return;
   selectedStore=i;
   $("map-store-name").textContent=s.name;
   $("map-address").textContent=s.address;
   const destination=s.lat&&s.lon?s.lat+","+s.lon:s.address;
-  $("store-map").title=s.name+" 구글 지도";
-  $("store-map").src="https://www.google.com/maps?q="+encodeURIComponent(destination)+"&z=16&output=embed";
+  $("tile-map").setAttribute("aria-label",s.name+" 위치 지도");
+  $("map-open").href="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(destination);
+  if(!$("stores").hidden)renderTileMap(s.lat,s.lon);
   $("map-placeholder").hidden=true;
   $("map-directions").href="https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(destination);
   $("map-directions").hidden=false;
@@ -134,4 +163,7 @@ async function geocodeAddress(){
   try{const res=await fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=kr&accept-language=ko&q="+encodeURIComponent("광주광역시 광산구 "+q));const data=await res.json();if(!data.length)throw new Error();userPoint={lat:Number(data[0].lat),lon:Number(data[0].lon)};$("location-status").textContent="입력한 주소 기준 가까운 순입니다. 거리는 직선거리예요.";renderStores()}catch{$("location-status").textContent="주소를 찾지 못했어요. 도로명주소로 다시 입력해 주세요."}
 }
 $("search-address").addEventListener("click",geocodeAddress);$("address-input").addEventListener("keydown",e=>{if(e.key==="Enter")geocodeAddress()});
+addEventListener("stores-view-open",()=>{if(selectedStore!==null){const s=stores[selectedStore];if(s)renderTileMap(s.lat,s.lon)}});
+if("ResizeObserver" in window)new ResizeObserver(positionMapTiles).observe($("tile-map"));
+else addEventListener("resize",positionMapTiles);
 loadStores();

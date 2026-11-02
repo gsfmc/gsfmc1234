@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/styles.css?v=google-map-1">
+  <link rel="stylesheet" href="/styles.css?v=osm-map-2">
 </head>
 <body>
 <div class="app-shell">
@@ -95,7 +95,12 @@
         </div>
         <div class="panel map-panel">
           <div class="map-head"><strong id="map-store-name">판매소를 선택해 주세요</strong><span id="map-address">목록에서 판매소를 누르면 지도를 보여드려요.</span></div>
-          <iframe id="store-map" title="판매소 구글 지도" loading="eager" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+          <div id="tile-map" class="tile-map" role="img" aria-label="판매소 위치 지도">
+            <div id="map-tiles" class="map-tiles" aria-hidden="true"></div>
+            <div class="map-marker" aria-hidden="true"></div>
+            <div class="map-attribution"><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a></div>
+            <div id="map-error" class="map-error" hidden><strong>지도를 불러오지 못했어요.</strong><a id="map-open" href="https://www.google.com/maps/" target="_blank" rel="noopener">구글 지도에서 보기</a></div>
+          </div>
           <div id="map-placeholder" class="map-placeholder"><span>⌖</span><strong>판매소 위치</strong><small>목록에서 한 곳을 선택해 주세요.</small></div>
           <a id="map-directions" class="btn secondary directions" target="_blank" rel="noopener" hidden>길찾기 열기</a>
         </div>
@@ -110,6 +115,6 @@
     <button type="button" data-open="stores"><span>⌖</span>판매소</button>
   </nav>
 </div>
-<script src="/app.js?v=google-map-1" defer></script>
+<script src="/app.js?v=osm-map-2" defer></script>
 </body>
 </html>
