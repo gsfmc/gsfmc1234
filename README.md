@@ -14,7 +14,7 @@
 ## 운영 환경값
 
 - `GEMINI_API_KEY`: Google AI Studio에서 발급한 Gemini API 키. 반드시 Sites 비밀 환경값으로 저장합니다.
-- `GEMINI_MODEL`: 선택 사항. 기본값은 `gemini-3.8-flash`입니다.
+- `GEMINI_MODEL`: 선택 사항. 기본값은 `gemini-3.5-flash`입니다.
 
 API 키는 브라우저와 GitHub 소스에 포함하지 않습니다. 사진은 서버가 Gemini API에 전달하며 앱이 별도로 저장하지 않습니다.
 

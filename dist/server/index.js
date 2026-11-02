@@ -6608,7 +6608,7 @@ async function analyze(request,env){
     "광산구 세부 규정이 확실하지 않은 내용은 '지역 최신 기준 확인'이라고 적으세요. 판매소나 수거일을 만들어내지 마세요."
   ].join("\n");
 
-  const model=env.GEMINI_MODEL||"gemini-3.8-flash";
+  const model=env.GEMINI_MODEL||"gemini-3.5-flash";
   const endpoint="https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent";
   let response;
   try{
