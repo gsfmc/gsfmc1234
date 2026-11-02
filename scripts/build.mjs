@@ -17,8 +17,8 @@ const staticSource=[
   "",
 ].join("\n");
 const staticHandler=[
-  '    if(url.pathname==="/styles.css")return new Response(STATIC_CSS,{headers:{"content-type":"text/css; charset=utf-8","cache-control":"public, max-age=3600"}});',
-  '    if(url.pathname==="/app.js")return new Response(STATIC_APP,{headers:{"content-type":"text/javascript; charset=utf-8","cache-control":"public, max-age=3600"}});',
+  '    if(url.pathname==="/styles.css")return new Response(STATIC_CSS,{headers:{"content-type":"text/css; charset=utf-8","cache-control":"no-cache"}});',
+  '    if(url.pathname==="/app.js")return new Response(STATIC_APP,{headers:{"content-type":"text/javascript; charset=utf-8","cache-control":"no-cache"}});',
   '    if(url.pathname==="/"||url.pathname==="/index.html")return new Response(STATIC_HTML,{headers:{"content-type":"text/html; charset=utf-8","cache-control":"no-cache"}});',
   '    return new Response("Not found",{status:404});',
 ].join("\n");
