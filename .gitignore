@@ -1,2 +1,5 @@
 .sites-runtime/
 site-upload.tar.gz
+.env
+.env.*
+node_modules/

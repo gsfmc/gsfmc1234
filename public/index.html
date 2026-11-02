@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#123f4e">
+  <meta name="description" content="사진으로 분리배출 방법을 확인하고 광산구 배출 일정과 종량제봉투 판매소를 찾아보세요.">
+  <title>광산 생활배출 길잡이</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div class="app-shell">
+  <header class="topbar">
+    <button class="brand" type="button" data-open="home" aria-label="홈으로 이동">
+      <span class="brand-mark">✓</span><span><strong>광산 생활배출</strong><small>버릴 때 바로 보는 길잡이</small></span>
+    </button>
+    <a class="agency-link" href="https://www.gsfmc.or.kr/html/03030100" target="_blank" rel="noopener">공단 안내</a>
+  </header>
+
+  <main>
+    <section id="home" class="view home-view">
+      <div class="hero">
+        <p class="eyebrow">광산구 생활폐기물 안내</p>
+        <h1>이거 어떻게 버리지?<br><span>사진 한 장이면 돼요.</span></h1>
+        <p>사진 속 물건과 재질을 AI가 직접 살펴보고, 분리 순서까지 쉽게 설명해 드려요.</p>
+      </div>
+      <div class="feature-grid">
+        <button class="feature-card photo-card" type="button" data-open="photo">
+          <span class="feature-icon">⌁</span><span class="feature-tag">핵심 기능</span>
+          <strong>사진 찍고<br>분리배출 확인</strong>
+          <small>사진 속 물건·재질을 직접 분석해요</small><b>시작하기 →</b>
+        </button>
+        <button class="feature-card schedule-card" type="button" data-open="schedule">
+          <span class="feature-icon">▤</span><strong>오늘 우리동네<br>뭐 버리는 날?</strong>
+          <small>동네별 배출일을 확인해요</small><b>확인하기 →</b>
+        </button>
+        <button class="feature-card store-card" type="button" data-open="stores">
+          <span class="feature-icon">⌖</span><strong>가까운 종량제봉투<br>판매소</strong>
+          <small>공공데이터로 위치를 찾아요</small><b>찾아보기 →</b>
+        </button>
+      </div>
+    </section>
+
+    <section id="photo" class="view workspace" hidden>
+      <div class="view-head">
+        <button class="back" type="button" data-open="home" aria-label="홈으로 돌아가기">‹</button>
+        <div><p class="eyebrow">01 · AI 사진 안내</p><h2>사진 찍고 분리배출 확인</h2><p>한 물건이 화면에 크게 보이도록 찍어 주세요.</p></div>
+      </div>
+      <div class="photo-grid">
+        <div class="panel upload-panel">
+          <div id="drop-zone" class="drop-zone">
+            <div id="preview-wrap" class="preview-wrap" hidden><img id="preview-img" alt="분석할 물건 사진"><button id="remove-photo" type="button" aria-label="사진 지우기">×</button></div>
+            <div id="upload-empty" class="upload-empty"><span>＋</span><strong>어떤 물건을 버리시나요?</strong><small>사진을 찍거나 앨범에서 골라 주세요.</small></div>
+          </div>
+          <div class="upload-actions">
+            <label class="btn primary" for="camera-input">사진 찍기<input id="camera-input" type="file" accept="image/*" capture="environment" hidden></label>
+            <label class="btn secondary" for="upload-input">사진 올리기<input id="upload-input" type="file" accept="image/*" hidden></label>
+          </div>
+          <p class="privacy-note">선택한 사진은 분석을 위해 암호화된 연결로 AI 서비스에 전송됩니다. 이 앱은 사진을 따로 저장하지 않습니다.</p>
+          <div id="ai-status" class="status" role="status" aria-live="polite"></div>
+        </div>
+        <div class="panel help-panel">
+          <div class="help-copy"><span class="help-icon">AI</span><div><strong>사진을 직접 이해해요</strong><p>미리 저장된 사진과 비교하지 않습니다. 물건, 보이는 재질과 부품을 함께 살펴 단계별로 안내합니다.</p></div></div>
+          <ol class="mini-steps"><li><b>1</b><span>물건과 재질 확인</span></li><li><b>2</b><span>분리할 부분 찾기</span></li><li><b>3</b><span>처리·배출 순서 안내</span></li></ol>
+          <div class="manual-search">
+            <label for="item-search">사진 없이 품목 찾기</label>
+            <input id="item-search" type="search" placeholder="예: 우산, 보조배터리, 배달용기">
+            <div id="search-results" class="search-results"></div>
+          </div>
+          <div><p class="label">많이 찾는 품목</p><div id="popular-list" class="chips"></div></div>
+        </div>
+      </div>
+      <section id="result-panel" class="result-panel" hidden aria-live="polite"></section>
+    </section>
+
+    <section id="schedule" class="view workspace" hidden>
+      <div class="view-head"><button class="back" type="button" data-open="home">‹</button><div><p class="eyebrow">02 · 배출 일정</p><h2>오늘 우리동네 뭐 버리는 날?</h2><p>공단의 동별 수거 자료를 받으면 바로 연결할 예정입니다.</p></div></div>
+      <div class="panel empty-panel"><span class="empty-glyph">▤</span><strong>수거 일정 자료 연결 준비 중</strong><p>동별 생활쓰레기·음식물·재활용품 수거 자료를 받으면 오늘 배출 품목부터 보여드릴게요.</p></div>
+    </section>
+
+    <section id="stores" class="view workspace" hidden>
+      <div class="view-head"><button class="back" type="button" data-open="home">‹</button><div><p class="eyebrow">03 · 공공데이터</p><h2>가까운 종량제봉투 판매소</h2><p>공공데이터포털의 표준데이터에서 광산구 판매소를 불러옵니다.</p></div></div>
+      <div class="store-grid">
+        <div class="panel store-panel">
+          <div class="location-controls">
+            <button id="use-location" class="btn primary" type="button">내 위치로 찾기</button>
+            <div><input id="address-input" type="search" placeholder="광산구 주소 또는 동 이름"><button id="search-address" class="btn secondary" type="button">주소로 찾기</button></div>
+          </div>
+          <div id="location-status" class="status" role="status" aria-live="polite">공식 판매소 자료를 불러오고 있어요…</div>
+          <div id="store-list" class="store-list"><div class="loading-card"></div><div class="loading-card"></div><div class="loading-card"></div></div>
+          <p id="store-source" class="source-note"></p>
+        </div>
+        <div class="panel map-panel">
+          <div class="map-head"><strong id="map-store-name">판매소를 선택해 주세요</strong><span id="map-address">목록에서 판매소를 누르면 지도를 보여드려요.</span></div>
+          <iframe id="store-map" title="판매소 지도" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          <div id="map-placeholder" class="map-placeholder"><span>⌖</span><strong>판매소 위치</strong><small>목록에서 한 곳을 선택해 주세요.</small></div>
+          <a id="map-directions" class="btn secondary directions" target="_blank" rel="noopener" hidden>길찾기 열기</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav" aria-label="주요 메뉴">
+    <button type="button" data-open="home" class="active"><span>●</span>홈</button>
+    <button type="button" data-open="photo"><span>⌁</span>사진 안내</button>
+    <button type="button" data-open="schedule"><span>▤</span>배출 일정</button>
+    <button type="button" data-open="stores"><span>⌖</span>판매소</button>
+  </nav>
+</div>
+<script src="/app.js" defer></script>
+</body>
+</html>
