@@ -39,7 +39,7 @@ $("item-search").addEventListener("input",e=>{
 });
 $("search-results").addEventListener("click",e=>{const b=e.target.closest("[data-guide]");if(b)renderManual(fallbackGuides[Number(b.dataset.guide)])});
 
-let photoToken=0;
+let photoToken=0,currentPhotoDataUrl=null;
 async function resizeImage(file){
   const bitmap=await createImageBitmap(file);
   const max=1280, scale=Math.min(1,max/Math.max(bitmap.width,bitmap.height));
@@ -51,28 +51,34 @@ async function setPhoto(file){
   if(!file||!file.type.startsWith("image/")){setStatus("이미지 파일을 선택해 주세요.",true);return}
   if(file.size>15*1024*1024){setStatus("사진 용량이 너무 커요. 15MB 이하 사진을 선택해 주세요.",true);return}
   const token=++photoToken;
+  $("analyze-photo").disabled=true;$("photo-description").disabled=false;$("result-panel").hidden=true;
   try{
     setStatus("사진을 준비하고 있어요…");
     const dataUrl=await resizeImage(file); if(token!==photoToken)return;
+    currentPhotoDataUrl=dataUrl;
     $("preview-img").src=dataUrl;$("preview-wrap").hidden=false;$("upload-empty").hidden=true;
-    await analyzePhoto(dataUrl,token);
-  }catch(err){setStatus("사진을 읽지 못했어요. 다른 사진으로 다시 시도해 주세요.",true)}
+    $("analyze-photo").disabled=false;
+    setStatus("사진이 준비됐어요. 설명을 추가한 뒤 분석하기를 눌러 주세요.");
+  }catch(err){if(token!==photoToken)return;$("analyze-photo").disabled=!currentPhotoDataUrl;setStatus("사진을 읽지 못했어요. 다른 사진으로 다시 시도해 주세요.",true)}
 }
 function setStatus(text,error=false,busy=false){const el=$("ai-status");el.textContent=text;el.className="status"+(error?" error":"")+(busy?" busy":"")}
-async function analyzePhoto(dataUrl,token){
-  setStatus("AI가 물건과 재질, 분리할 부분을 살펴보고 있어요…",false,true);
+async function analyzePhoto(dataUrl,token,description){
+  $("analyze-photo").disabled=true;$("photo-description").disabled=true;
+  setStatus(description?"AI가 사진과 설명을 함께 살펴보고 있어요…":"AI가 사진 속 물건과 재질을 살펴보고 있어요…",false,true);
   $("result-panel").hidden=true;
   try{
-    const res=await fetch("/api/analyze",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({image:dataUrl})});
+    const res=await fetch("/api/analyze",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({image:dataUrl,description})});
     const data=await res.json().catch(()=>({}));
     if(token!==photoToken)return;
     if(!res.ok)throw new Error(data.message||"분석에 실패했습니다.");
     renderAnalysis(data);
     setStatus("분석이 끝났어요. 사진과 실제 물건을 함께 확인해 주세요.");
   }catch(err){
+    if(token!==photoToken)return;
     setStatus(err.message==="AI_SETUP_REQUIRED"?"AI 분석 연결을 준비 중입니다. 잠시 후 다시 시도해 주세요.":(err.message||"사진을 분석하지 못했어요. 잠시 후 다시 시도해 주세요."),true);
-  }
+  }finally{if(token===photoToken){$("analyze-photo").disabled=!currentPhotoDataUrl;$("photo-description").disabled=false}}
 }
+$("analyze-photo").addEventListener("click",()=>{if(currentPhotoDataUrl)analyzePhoto(currentPhotoDataUrl,++photoToken,$("photo-description").value.trim())});
 function renderAnalysis(a){
   const confidence=a.confidence||"medium";
   const title=confidence==="low"?"사진 속 물건을 확실히 구분하기 어려워요":"사진 속 물건은 ‘"+esc(a.itemName||"알 수 없는 물건")+"’으로 보여요.";
@@ -91,7 +97,7 @@ function renderAnalysis(a){
   $("result-panel").hidden=false;$("result-panel").scrollIntoView({behavior:"smooth",block:"nearest"});
 }
 ["camera-input","upload-input"].forEach(id=>$(id).addEventListener("change",e=>setPhoto(e.target.files&&e.target.files[0])));
-$("remove-photo").addEventListener("click",()=>{photoToken++;$("preview-img").removeAttribute("src");$("preview-wrap").hidden=true;$("upload-empty").hidden=false;$("result-panel").hidden=true;setStatus("");$("camera-input").value="";$("upload-input").value=""});
+$("remove-photo").addEventListener("click",()=>{photoToken++;currentPhotoDataUrl=null;$("analyze-photo").disabled=true;$("photo-description").disabled=false;$("preview-img").removeAttribute("src");$("preview-wrap").hidden=true;$("upload-empty").hidden=false;$("result-panel").hidden=true;setStatus("");$("camera-input").value="";$("upload-input").value=""});
 const drop=$("drop-zone");
 ["dragenter","dragover"].forEach(n=>drop.addEventListener(n,e=>{e.preventDefault();drop.classList.add("drag")}));
 ["dragleave","drop"].forEach(n=>drop.addEventListener(n,e=>{e.preventDefault();drop.classList.remove("drag")}));

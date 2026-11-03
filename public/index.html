@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/styles.css?v=photo-layout-5">
+  <link rel="stylesheet" href="/styles.css?v=photo-context-6">
 </head>
 <body>
 <div class="app-shell">
@@ -59,12 +59,18 @@
             <label class="btn primary" for="camera-input">사진 찍기<input id="camera-input" type="file" accept="image/*" capture="environment" hidden></label>
             <label class="btn secondary" for="upload-input">사진 올리기<input id="upload-input" type="file" accept="image/*" hidden></label>
           </div>
-          <p class="privacy-note">선택한 사진은 분석을 위해 암호화된 연결로 AI 서비스에 전송됩니다. 이 앱은 사진을 따로 저장하지 않습니다.</p>
+          <p class="privacy-note">선택한 사진과 설명은 분석을 위해 암호화된 연결로 AI 서비스에 전송됩니다. 이 앱은 사진과 설명을 따로 저장하지 않습니다.</p>
           <div id="ai-status" class="status" role="status" aria-live="polite"></div>
         </div>
         <div class="panel help-panel">
-          <div class="help-copy"><span class="help-icon">AI</span><div><strong>사진을 직접 이해해요</strong><p>미리 저장된 사진과 비교하지 않습니다. 물건, 보이는 재질과 부품을 함께 살펴 단계별로 안내합니다.</p></div></div>
-          <ol class="mini-steps"><li><b>1</b><span>사진 속 물건과 재질을 확인해요</span></li><li><b>2</b><span>분리해야 할 부품을 찾아요</span></li><li><b>3</b><span>처리 방법과 배출 순서를 안내해요</span></li></ol>
+          <div class="help-copy"><span class="help-icon">AI</span><div><strong>사진과 설명을 함께 살펴봐요</strong><p>사진에 보이는 재질과 부품, 적어 주신 용도와 상태를 함께 살펴 배출 방법을 안내합니다.</p></div></div>
+          <ol class="mini-steps"><li><b>1</b><span>사진과 설명에서 물건·재질을 확인해요</span></li><li><b>2</b><span>분리해야 할 부품을 찾아요</span></li><li><b>3</b><span>처리 방법과 배출 순서를 안내해요</span></li></ol>
+          <div class="photo-context">
+            <label for="photo-description">사진 설명 <span>선택</span></label>
+            <textarea id="photo-description" rows="3" maxlength="1000" placeholder="예: 금속 몸체에 플라스틱 손잡이가 달린 프라이팬이고, 코팅이 벗겨졌어요." aria-describedby="photo-description-help"></textarea>
+            <p id="photo-description-help">사진으로 알기 어려운 재질, 용도, 오염·파손 상태를 적어 주세요. 설명 없이도 분석할 수 있어요.</p>
+            <button id="analyze-photo" class="btn primary" type="button" disabled>분리배출 방법 분석하기</button>
+          </div>
         </div>
       </div>
       <section id="result-panel" class="result-panel" hidden aria-live="polite"></section>
@@ -117,6 +123,6 @@
     <button type="button" data-open="stores"><span>⌖</span>판매소</button>
   </nav>
 </div>
-<script src="/app.js?v=photo-layout-5" defer></script>
+<script src="/app.js?v=photo-context-6" defer></script>
 </body>
 </html>
