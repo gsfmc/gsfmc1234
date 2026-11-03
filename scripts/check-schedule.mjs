@@ -1,0 +1,24 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {SCHEDULE_AREAS,regularCollection,pointInGeometry,locateDong} from '../public/schedule.js';
+const boundaries=JSON.parse(await readFile(new URL('../public/gwangsan-dongs.geojson',import.meta.url),'utf8'));
+assert.equal(boundaries.features.length,21);
+assert.equal(SCHEDULE_AREAS.filter(a=>!a.industrial).length,21);
+assert.equal(new Set(SCHEDULE_AREAS.map(a=>a.name)).size,27);
+for(const feature of boundaries.features)assert.ok(SCHEDULE_AREAS.some(a=>a.name===feature.properties.adm_nm.split(' ').at(-1)));
+const tuesday=new Date('2026-11-03T03:00:00Z');
+assert.equal(regularCollection([1,3,5],tuesday).offset,1);
+assert.equal(regularCollection([2,4,6],tuesday).today,true);
+assert.equal(regularCollection([1,2,3,4,5,6],new Date('2026-11-01T03:00:00Z')).offset,1);
+assert.equal(regularCollection([1],new Date('2026-11-01T15:30:00Z')).today,true); // Monday in Korea.
+assert.deepEqual(SCHEDULE_AREAS.find(a=>a.name==='월곡2동').days,[2,4,6]);
+assert.deepEqual(SCHEDULE_AREAS.find(a=>a.name==='하남산단').days,[3,6]);
+assert.deepEqual(SCHEDULE_AREAS.find(a=>a.name==='평동산단3단지').days,[2,5]);
+assert.equal(locateDong([126.8081891608,35.172353847],25,boundaries.features).name,'월곡2동');
+assert.equal(locateDong([126.978,37.566],25,boundaries.features),null);
+const square={type:'Feature',properties:{adm_nm:'테스트동'},geometry:{type:'Polygon',coordinates:[[[126,35],[127,35],[127,36],[126,36],[126,35]]]}};
+assert.equal(locateDong([126.00001,35.5],100,[square]).boundaryNearby,true);
+assert.equal(locateDong([126.5,35.5],25,[square]).boundaryNearby,false);
+const hole={type:'Polygon',coordinates:[square.geometry.coordinates[0],[[126.2,35.2],[126.8,35.2],[126.8,35.8],[126.2,35.8],[126.2,35.2]]]};
+assert.equal(pointInGeometry([126.5,35.5],hole),false);
+console.log('PASS: 21 administrative dongs, 6 industrial areas, Korean dates, collection weekdays, local GPS matching and uncertain boundaries.');

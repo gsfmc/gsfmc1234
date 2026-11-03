@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/styles.css?v=photo-context-7">
+  <link rel="stylesheet" href="/styles.css?v=schedule-8">
 </head>
 <body>
 <div class="app-shell">
@@ -85,8 +85,21 @@
     </section>
 
     <section id="schedule" class="view workspace" hidden>
-      <div class="view-head"><button class="back" type="button" data-open="home">‹</button><div><p class="eyebrow">02 · 배출 일정</p><h2>오늘 우리동네 뭐 버리는 날?</h2><p>공단의 동별 수거 자료를 받으면 바로 연결할 예정입니다.</p></div></div>
-      <div class="panel empty-panel"><span class="empty-glyph">▤</span><strong>수거 일정 자료 연결 준비 중</strong><p>동별 생활쓰레기·음식물·재활용품 수거 자료를 받으면 오늘 배출 품목부터 보여드릴게요.</p></div>
+      <div class="view-head"><button class="back" type="button" data-open="home">‹</button><div><p class="eyebrow">02 · 우리동네 수거일</p><h2>오늘 우리동네 뭐 버리는 날?</h2><p>공단 안내의 정기 수거 요일을 확인해요.</p></div></div>
+      <div class="panel schedule-location">
+        <button id="schedule-locate" class="btn primary" type="button">내 위치로 우리동네 찾기</button>
+        <div><label for="schedule-area">동 또는 산업단지 직접 선택</label><select id="schedule-area"><option value="">지역을 선택해 주세요</option></select></div>
+        <p id="schedule-location-status" class="status" role="status" aria-live="polite">위치를 확인하거나 지역을 선택하면 우리동네 수거일을 보여드려요.</p>
+      </div>
+      <div class="schedule-caption"><strong id="schedule-heading">광산구 기본 수거 안내</strong><span id="schedule-date"></span></div>
+      <p class="schedule-caution">공휴일·일요일은 수거하지 않아요. 아래 일정은 정기 요일 기준이며, 임시 변경은 공단 안내를 확인해 주세요.</p>
+      <div id="schedule-cards" class="schedule-cards" aria-live="polite"></div>
+      <div class="panel schedule-basics">
+        <div><span>생활·음식물 배출 시간</span><strong>20:00 ~ 다음 날 06:00</strong><p>주간에는 배출하지 말아 주세요.</p></div>
+        <div><span>생활·음식물 수거 시간</span><strong>평일 06:00~15:00 · 토요일 06:00~14:00</strong><p>공동주택은 단지 내 배출 안내도 함께 확인해 주세요.</p></div>
+      </div>
+      <p class="source-note">수거 일정: <a href="https://www.gsfmc.or.kr/html/03030100" target="_blank" rel="noopener">광산구시설관리공단 생활폐기물 수집·운반 안내</a> · 확인일 2026.11.03</p>
+      <details class="schedule-data-notes"><summary>위치 확인과 자료 출처</summary><p>위치는 동을 찾는 데만 사용하고 저장하지 않습니다. 위치 오차나 동 경계 자료에 따라 실제 행정동과 다를 수 있으니 선택된 지역을 확인해 주세요. 산업단지는 해당 단지를 직접 선택해 주세요.</p><p>동 경계는 통계청 통계지리정보서비스(<a href="https://sgis.kostat.go.kr" target="_blank" rel="noopener">SGIS</a>)에서 공공누리 제1유형으로 개방한 행정동 경계를 가공한 자료입니다. 가공: <a href="https://github.com/vuski/admdongkor/tree/master/ver20260701" target="_blank" rel="noopener">vuski/admdongkor</a>, CC BY 4.0. 2026.07.01 기준 자료에서 광산구만 추출했습니다.</p></details>
     </section>
 
     <section id="stores" class="view workspace" hidden>
@@ -123,6 +136,7 @@
     <button type="button" data-open="stores"><span>⌖</span>판매소</button>
   </nav>
 </div>
-<script src="/app.js?v=photo-context-7" defer></script>
+<script src="/app.js?v=schedule-8" defer></script>
+<script type="module" src="/schedule.js?v=schedule-8"></script>
 </body>
 </html>

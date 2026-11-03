@@ -1,9 +1,11 @@
 import {mkdir,rm,readFile,writeFile,copyFile} from "node:fs/promises";
 
-const [html,css,app,worker,stores]=await Promise.all([
+const [html,css,app,schedule,boundaries,worker,stores]=await Promise.all([
   readFile("public/index.html","utf8"),
   readFile("public/styles.css","utf8"),
   readFile("public/app.js","utf8"),
+  readFile("public/schedule.js","utf8"),
+  readFile("public/gwangsan-dongs.geojson","utf8"),
   readFile("src/worker.js","utf8"),
   readFile("data/gwangsan-stores.json","utf8"),
 ]);
@@ -14,11 +16,15 @@ const staticSource=[
   "const STATIC_HTML="+JSON.stringify(html)+";",
   "const STATIC_CSS="+JSON.stringify(css)+";",
   "const STATIC_APP="+JSON.stringify(app)+";",
+  "const STATIC_SCHEDULE="+JSON.stringify(schedule)+";",
+  "const STATIC_BOUNDARIES="+boundaries.trim()+";",
   "",
 ].join("\n");
 const staticHandler=[
   '    if(url.pathname==="/styles.css")return new Response(STATIC_CSS,{headers:{"content-type":"text/css; charset=utf-8","cache-control":"no-cache"}});',
   '    if(url.pathname==="/app.js")return new Response(STATIC_APP,{headers:{"content-type":"text/javascript; charset=utf-8","cache-control":"no-cache"}});',
+  '    if(url.pathname==="/schedule.js")return new Response(STATIC_SCHEDULE,{headers:{"content-type":"text/javascript; charset=utf-8","cache-control":"no-cache"}});',
+  '    if(url.pathname==="/gwangsan-dongs.geojson")return new Response(JSON.stringify(STATIC_BOUNDARIES),{headers:{"content-type":"application/geo+json; charset=utf-8","cache-control":"public, max-age=86400"}});',
   '    if(url.pathname==="/"||url.pathname==="/index.html")return new Response(STATIC_HTML,{headers:{"content-type":"text/html; charset=utf-8","cache-control":"no-cache"}});',
   '    return new Response("Not found",{status:404});',
 ].join("\n");
