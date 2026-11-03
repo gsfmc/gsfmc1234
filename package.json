@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",
-    "check": "node --check dist/server/index.js"
+    "check": "node --check dist/server/index.js",
+    "update:stores": "node scripts/update-stores.mjs"
   }
 }
