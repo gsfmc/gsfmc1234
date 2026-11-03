@@ -82,6 +82,7 @@ function renderAnalysis(a){
   const questions=(a.questions||[]).map(x=>"<li>"+esc(x)+"</li>").join("");
   const alternatives=(a.alternatives||[]).map(x=>esc(x)).join(" · ");
   $("result-panel").innerHTML='<div class="result-hero"><div><p class="result-kicker">AI 사진 분석 결과</p><h3>'+title+'</h3><p class="result-summary">'+esc(a.summary||"")+'</p></div><div class="badges"><span class="badge">배출 구분 · '+esc(a.category||"판단보류")+'</span><span class="badge '+(confidence==="low"?"low":"")+'">판단 신뢰도 · '+({high:"높음",medium:"보통",low:"낮음"}[confidence]||"보통")+'</span></div></div>'+
+  '<div class="analysis-disclaimer"><strong>분석 결과는 참고용으로 활용해 주세요</strong><p>AI 분석 결과는 실제 물품의 재질·상태와 다를 수 있으며, 배출 기준은 추후 변경될 수 있습니다. 배출 전 광산구·공단의 최신 안내를 확인해 주세요.</p></div>'+
   (components?'<div class="result-section"><h4>보이는 부분과 재질</h4><div class="component-list">'+components+'</div></div>':"")+
   (steps?'<div class="result-section"><h4>이 부분은 분리해서 배출하세요</h4><div class="guide-steps">'+steps+'</div></div>':"")+
   (prep?'<div class="result-section"><h4>배출 전 처리방법</h4><div class="notice"><ol>'+prep+'</ol></div></div>':"")+

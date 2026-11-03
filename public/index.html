@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/styles.css?v=google-map-4">
+  <link rel="stylesheet" href="/styles.css?v=photo-layout-5">
 </head>
 <body>
 <div class="app-shell">
@@ -64,16 +64,18 @@
         </div>
         <div class="panel help-panel">
           <div class="help-copy"><span class="help-icon">AI</span><div><strong>사진을 직접 이해해요</strong><p>미리 저장된 사진과 비교하지 않습니다. 물건, 보이는 재질과 부품을 함께 살펴 단계별로 안내합니다.</p></div></div>
-          <ol class="mini-steps"><li><b>1</b><span>물건과 재질 확인</span></li><li><b>2</b><span>분리할 부분 찾기</span></li><li><b>3</b><span>처리·배출 순서 안내</span></li></ol>
+          <ol class="mini-steps"><li><b>1</b><span>사진 속 물건과 재질을 확인해요</span></li><li><b>2</b><span>분리해야 할 부품을 찾아요</span></li><li><b>3</b><span>처리 방법과 배출 순서를 안내해요</span></li></ol>
+        </div>
+      </div>
+      <section id="result-panel" class="result-panel" hidden aria-live="polite"></section>
+      <section class="panel manual-panel" aria-label="사진 없이 품목 찾기">
           <div class="manual-search">
             <label for="item-search">사진 없이 품목 찾기</label>
             <input id="item-search" type="search" placeholder="예: 우산, 보조배터리, 배달용기">
             <div id="search-results" class="search-results"></div>
           </div>
           <div><p class="label">많이 찾는 품목</p><div id="popular-list" class="chips"></div></div>
-        </div>
-      </div>
-      <section id="result-panel" class="result-panel" hidden aria-live="polite"></section>
+      </section>
     </section>
 
     <section id="schedule" class="view workspace" hidden>
@@ -115,6 +117,6 @@
     <button type="button" data-open="stores"><span>⌖</span>판매소</button>
   </nav>
 </div>
-<script src="/app.js?v=google-map-4" defer></script>
+<script src="/app.js?v=photo-layout-5" defer></script>
 </body>
 </html>
