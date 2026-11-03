@@ -9,7 +9,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/styles.css?v=schedule-8">
+  <link rel="stylesheet" href="/vendor/leaflet.css">
+  <link rel="stylesheet" href="/vendor/MarkerCluster.css">
+  <link rel="stylesheet" href="/styles.css?v=clusters-10">
 </head>
 <body>
 <div class="app-shell">
@@ -108,15 +110,17 @@
         <div class="panel store-panel">
           <div class="location-controls">
             <button id="use-location" class="btn primary" type="button">내 위치로 찾기</button>
-            <div><input id="address-input" type="search" placeholder="광산구 주소 또는 동 이름"><button id="search-address" class="btn secondary" type="button">주소로 찾기</button></div>
+            <div class="address-search"><label for="address-input" class="sr-only">동·도로명·판매소명 검색</label><input id="address-input" type="search" placeholder="동·도로명·판매소명" autocomplete="off" aria-describedby="location-status"><button id="search-address" class="btn secondary" type="button">검색</button><div id="address-suggestions" class="address-suggestions" aria-label="검색 추천 판매소" hidden></div></div>
           </div>
           <div id="location-status" class="status" role="status" aria-live="polite">공식 판매소 자료를 불러오고 있어요…</div>
+          <p id="map-store-count" class="map-store-count" aria-live="polite"></p>
           <div id="store-list" class="store-list"><div class="loading-card"></div><div class="loading-card"></div><div class="loading-card"></div></div>
           <p id="store-source" class="source-note"></p>
         </div>
         <div class="panel map-panel">
-          <div class="map-head"><div><strong id="map-store-name">판매소를 선택해 주세요</strong><span id="map-address">목록에서 판매소를 선택해 주세요.</span></div><div class="map-zoom" aria-label="지도 확대와 축소"><button id="map-zoom-out" type="button" aria-label="지도 축소">−</button><button id="map-zoom-in" type="button" aria-label="지도 확대">＋</button></div></div>
-          <iframe id="store-map" class="google-map" title="판매소 구글 지도" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+          <div class="map-head"><div><strong id="map-store-name">주변 판매소 지도</strong><span id="map-address">지도를 움직여 주변 판매소를 찾아보세요.</span></div><div class="map-zoom" aria-label="지도 확대와 축소"><button id="map-zoom-out" type="button" aria-label="지도 축소">−</button><button id="map-zoom-in" type="button" aria-label="지도 확대">＋</button></div></div>
+          <div id="store-map" class="interactive-map" role="region" aria-label="광산구 종량제봉투 판매소 지도. 드래그로 이동하고 확대 버튼으로 확대하세요."></div>
+          <p id="map-load-note" class="map-load-note" role="status" hidden>지도 배경을 불러오지 못했어요. 판매소 점과 목록을 이용하거나 아래 지도 보기를 눌러 주세요.</p>
           <div class="map-footer">
             <div class="map-actions">
               <a id="map-open" class="btn secondary" href="https://www.google.com/maps/" target="_blank" rel="noopener" hidden>구글 지도 크게 보기</a>
@@ -136,7 +140,8 @@
     <button type="button" data-open="stores"><span>⌖</span>판매소</button>
   </nav>
 </div>
-<script src="/app.js?v=schedule-8" defer></script>
-<script type="module" src="/schedule.js?v=schedule-8"></script>
+<script src="/app.js?v=clusters-10" defer></script>
+<script type="module" src="/schedule.js?v=clusters-10"></script>
+<script type="module" src="/stores.js?v=clusters-10"></script>
 </body>
 </html>

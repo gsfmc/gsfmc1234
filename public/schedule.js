@@ -1,3 +1,5 @@
+import {pointInGeometry} from "./geo.js";
+export {pointInGeometry} from "./geo.js";
 // Regular collection weekdays checked against GSFMC's guide on 2026-11-03.
 export const SCHEDULE_GROUPS=[
   {days:[1,3,5],areas:["송정1동","송정2동","도산동","우산동","월곡1동","비아동","하남동","첨단1동","첨단2동"]},
@@ -17,18 +19,6 @@ export function regularCollection(days,now=new Date()){
   let offset=0;while(offset<7&&!days.includes((weekday+offset)%7))offset++;
   const next=new Date(today);next.setUTCDate(next.getUTCDate()+offset);
   return {today:offset===0,offset,label:offset===0?"오늘 정기 수거일":offset===1?"내일 정기 수거일":WEEKDAYS[next.getUTCDay()]+"요일 정기 수거",date:next.getUTCMonth()+1+"월 "+next.getUTCDate()+"일",weekday:WEEKDAYS[weekday],todayDate:today.getUTCMonth()+1+"월 "+today.getUTCDate()+"일"};
-}
-function inRing(point,ring){
-  const [x,y]=point;let inside=false;
-  for(let i=0,j=ring.length-1;i<ring.length;j=i++){
-    const [xi,yi]=ring[i],[xj,yj]=ring[j];
-    if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))inside=!inside;
-  }
-  return inside;
-}
-export function pointInGeometry(point,geometry){
-  const polygons=geometry.type==="Polygon"?[geometry.coordinates]:geometry.type==="MultiPolygon"?geometry.coordinates:[];
-  return polygons.some(rings=>inRing(point,rings[0])&&!rings.slice(1).some(ring=>inRing(point,ring)));
 }
 export function locateDong(point,accuracy,features){
   const find=p=>features.find(f=>pointInGeometry(p,f.geometry));

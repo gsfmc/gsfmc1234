@@ -16,3 +16,27 @@
 .map-actions .btn{flex:1;min-width:160px;text-align:center}
 .map-footer small{display:block;font-size:.72rem;line-height:1.5;color:#6b8388;margin-top:8px}
 @media(max-width:800px){#stores .map-panel{flex-basis:min(33vh,278px);min-height:245px}.google-map{min-height:110px}.map-footer{padding:8px 10px}.map-actions .btn{min-width:0;font-size:.72rem;min-height:38px;padding:7px}.map-footer small{font-size:.65rem;margin-top:5px}#stores .store-panel{padding:14px}#stores .location-controls{flex-direction:row}#stores .location-controls>div{width:auto;min-width:0}#stores .location-controls .btn{padding:7px;font-size:.72rem;min-height:43px}#use-location{flex:0 0 78px}#stores .location-controls input{height:43px;font-size:.76rem;padding:0 9px}}
+/* Interactive store map and local address search. */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.interactive-map{flex:1;width:100%;min-height:220px;background:#e6eeeb;isolation:isolate;z-index:0}
+.interactive-map .leaflet-control-attribution{font-size:10px;line-height:1.4;background:#fffffff2;color:#43615f}
+.interactive-map .leaflet-control-attribution a{color:#23665b}
+.interactive-map .leaflet-tooltip{font-family:inherit;color:#173b43;border-radius:8px;box-shadow:0 2px 8px #143f4b1a}
+.map-load-note{margin:0;padding:8px 12px;font-size:.72rem;line-height:1.5;background:#fff2d9;color:#78571d}
+.map-load-note[hidden]{display:none}
+.store-list{flex:1;min-height:0;overscroll-behavior:contain}
+.store-item{flex-shrink:0}
+.store-empty{padding:28px 12px;text-align:center;color:#5d7a7e;font-size:.82rem;line-height:1.7}
+.store-empty p{margin:6px 0}.store-empty button{border:0;background:none;color:#14786c;text-decoration:underline;font:inherit}
+.map-store-count{font-size:.74rem;font-weight:700;color:#167568;margin:9px 0 0;flex:0 0 auto}
+.location-controls{align-items:center}.location-controls .btn{white-space:nowrap}
+.address-search{position:relative;min-width:0}.address-suggestions{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:1001;background:#fff;border:1px solid #cbded7;border-radius:12px;box-shadow:0 8px 24px #143f4b26;max-height:240px;overflow:auto}
+.address-suggestions[hidden]{display:none}.address-suggestions button{display:block;width:100%;border:0;border-bottom:1px solid #e7eeeb;background:#fff;padding:12px;text-align:left;color:#173b43}
+.address-suggestions button:hover,.address-suggestions button:focus{background:#edf7f2}.address-suggestions strong,.address-suggestions span{display:block}.address-suggestions strong{font-size:.82rem}.address-suggestions span{font-size:.72rem;color:#71868a;margin-top:3px;line-height:1.5}
+#use-location:disabled{opacity:.6;cursor:wait}
+@media(max-width:800px){#stores .map-panel{flex-basis:min(38vh,320px);min-height:270px}.interactive-map{min-height:170px}#stores .map-head{padding:9px 12px;min-height:56px}#map-store-name{font-size:.87rem}#map-address{font-size:.69rem;line-height:1.45}#stores .map-footer{padding:7px 10px}#stores .map-footer small{display:none}#stores .store-panel{padding:12px}#stores .location-controls input{font-size:16px;min-width:0;padding:0 8px}#stores .location-controls .btn{padding:7px 9px}#stores .status{font-size:.73rem;min-height:0;margin-top:7px;line-height:1.45}#stores .source-note{font-size:.63rem;line-height:1.4;margin-top:7px}#stores .store-item{padding:10px;gap:7px}#stores .store-item strong{font-size:.83rem}#stores .store-item span{font-size:.7rem}#stores .map-store-count{font-size:.68rem;margin-top:7px}.address-suggestions{max-height:190px}.store-empty{padding:15px 7px;font-size:.74rem}}
+@media(max-width:800px) and (max-height:680px){#stores .map-panel{min-height:225px;flex-basis:225px}.interactive-map{min-height:130px}#stores .view-head{margin-bottom:9px}#stores .source-note{display:none}#stores .store-item span>span:last-child{display:none}}
+/* Nearby shops share one numbered marker until the map is enlarged. */
+.store-cluster{border:0;border-radius:50%;background:#12856eeb;box-shadow:0 0 0 5px #12856e26;color:#fff;font-family:inherit;font-size:14px;font-weight:800;text-align:center;display:grid;place-items:center}
+.store-cluster span{display:grid;place-items:center;width:100%;height:100%;border-radius:50%}.store-cluster:hover{background:#086d5a;box-shadow:0 0 0 7px #12856e30}.store-cluster:focus-visible{outline:3px solid #ffc46c;outline-offset:5px}
+.store-pin{background:none;border:0;display:grid;place-items:center}.store-pin span{display:block;width:14px;height:14px;border:2px solid #fff;border-radius:50%;background:#137f70;box-shadow:0 1px 5px #163f4b40}.store-pin.selected span{width:21px;height:21px;background:#e26a32;border-width:3px;box-shadow:0 0 0 4px #e26a3226}
