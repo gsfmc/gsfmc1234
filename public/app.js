@@ -26,6 +26,7 @@ const fallbackGuides=[
 
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
 function renderManual(item){
+  $("result-panel").classList.remove("readable-result");
   $("result-panel").innerHTML='<div class="result-hero"><div><p class="result-kicker">직접 선택한 품목</p><h3>'+esc(item.name)+'</h3><p class="result-summary">'+esc(item.summary)+'</p></div><div class="badges"><span class="badge">배출 구분 · '+esc(item.kind)+'</span></div></div><div class="result-section"><h4>이렇게 나눠서 배출하세요</h4><div class="guide-steps">'+item.steps.map((s,i)=>'<article class="guide-step"><small>'+String(i+1).padStart(2,"0")+' · '+esc(s[0])+'</small><strong>'+esc(s[1])+'</strong><p>'+esc(s[2])+'</p></article>').join("")+'</div></div><div class="notice"><strong>주의사항</strong> · '+esc(item.warning)+'</div>';
   $("result-panel").hidden=false;
   $("result-panel").scrollIntoView({behavior:"smooth",block:"nearest"});
@@ -82,20 +83,24 @@ async function analyzePhoto(dataUrl,token,description){
 $("analyze-photo").addEventListener("click",()=>{if(currentPhotoDataUrl)analyzePhoto(currentPhotoDataUrl,++photoToken,$("photo-description").value.trim())});
 function renderAnalysis(a){
   const confidence=a.confidence||"medium";
-  const title=confidence==="low"?"사진 속 물건을 확실히 구분하기 어려워요":"사진 속 물건은 ‘"+esc(a.itemName||"알 수 없는 물건")+"’으로 보여요.";
-  const components=(a.components||[]).map(x=>'<span class="component"><strong>'+esc(x.part)+'</strong> · '+esc(x.material)+'</span>').join("");
-  const steps=(a.steps||[]).map((x,i)=>'<article class="guide-step"><small>'+String(i+1).padStart(2,"0")+' · '+esc(x.part)+'</small><strong>'+esc(x.action)+'</strong><p>'+esc(x.detail)+'</p></article>').join("");
+  const itemName=String(a.itemName||"품목 확인이 필요한 물건"),nameParts=itemName.match(/^(.+?)\s*[(（](.+)[)）]\s*$/);
+  const title=esc(nameParts?nameParts[1].trim():itemName),nameDetail=nameParts?'<p class="analysis-item-detail">'+esc(nameParts[2])+'</p>':"";
+  const components=(a.components||[]).map(x=>'<div><dt>'+esc(x.part)+'</dt><dd>'+esc(x.material)+'</dd></div>').join("");
+  const steps=(a.steps||[]).map((x,i)=>'<li class="analysis-step"><span class="analysis-step-number" aria-hidden="true">'+(i+1)+'</span><div><p class="analysis-step-part">'+esc(x.part)+'</p><h5>'+esc(x.action)+'</h5><p class="analysis-step-detail">'+esc(x.detail)+'</p></div></li>').join("");
   const prep=(a.preparation||[]).map(x=>"<li>"+esc(x)+"</li>").join("");
   const questions=(a.questions||[]).map(x=>"<li>"+esc(x)+"</li>").join("");
   const alternatives=(a.alternatives||[]).map(x=>esc(x)).join(" · ");
-  $("result-panel").innerHTML='<div class="result-hero"><div><p class="result-kicker">AI 사진 분석 결과</p><h3>'+title+'</h3><p class="result-summary">'+esc(a.summary||"")+'</p></div><div class="badges"><span class="badge">배출 구분 · '+esc(a.category||"판단보류")+'</span><span class="badge '+(confidence==="low"?"low":"")+'">판단 신뢰도 · '+({high:"높음",medium:"보통",low:"낮음"}[confidence]||"보통")+'</span></div></div>'+
-  '<div class="analysis-disclaimer"><strong>분석 결과는 참고용으로 활용해 주세요</strong><p>AI 분석 결과는 실제 물품의 재질·상태와 다를 수 있으며, 배출 기준은 추후 변경될 수 있습니다. 배출 전 광산구·공단의 최신 안내를 확인해 주세요.</p></div>'+
-  (components?'<div class="result-section"><h4>보이는 부분과 재질</h4><div class="component-list">'+components+'</div></div>':"")+
-  (steps?'<div class="result-section"><h4>이 부분은 분리해서 배출하세요</h4><div class="guide-steps">'+steps+'</div></div>':"")+
-  (prep?'<div class="result-section"><h4>배출 전 처리방법</h4><div class="notice"><ol>'+prep+'</ol></div></div>':"")+
-  ((a.warnings||[]).length?'<div class="notice"><strong>주의사항</strong><ul>'+(a.warnings||[]).map(x=>"<li>"+esc(x)+"</li>").join("")+'</ul></div>':"")+
-  (questions||alternatives?'<div class="clarify"><strong>조금 더 확인해 주세요</strong>'+(alternatives?'<p>비슷하게 보이는 품목: '+alternatives+'</p>':"")+(questions?'<ul>'+questions+'</ul>':"")+'</div>':"");
-  $("result-panel").hidden=false;$("result-panel").scrollIntoView({behavior:"smooth",block:"nearest"});
+  $("result-panel").classList.add("readable-result");
+  $("result-panel").innerHTML='<div class="analysis-result"><header class="analysis-header"><p class="analysis-kicker">AI 사진 분석 결과</p><h3 tabindex="-1">'+title+'</h3>'+nameDetail+'<div class="analysis-category"><span>배출 구분</span><strong>'+esc(a.category||"판단보류")+'</strong></div>'+
+  (confidence==="low"?'<p class="analysis-uncertain">사진만으로는 정확한 품목을 구분하기 어려워요. 아래 확인 사항을 먼저 살펴봐 주세요.</p>':"")+
+  (a.summary?'<p class="analysis-summary">'+esc(a.summary)+'</p>':"")+'</header>'+
+  (questions||alternatives?'<section class="analysis-clarify"><h4>먼저 확인해 주세요</h4>'+(alternatives?'<p><strong>비슷하게 보이는 품목</strong><br>'+alternatives+'</p>':"")+(questions?'<ul>'+questions+'</ul>':"")+'</section>':"")+
+  (steps?'<section class="analysis-block"><h4>이렇게 나눠서 배출하세요</h4><ol class="analysis-steps">'+steps+'</ol></section>':"")+
+  (prep?'<section class="analysis-block analysis-preparation"><h4>배출 전 준비</h4><ul>'+prep+'</ul></section>':"")+
+  ((a.warnings||[]).length?'<aside class="analysis-warning"><h4><span aria-hidden="true">!</span> 꼭 주의해 주세요</h4><ul>'+(a.warnings||[]).map(x=>"<li>"+esc(x)+"</li>").join("")+'</ul></aside>':"")+
+  (components?'<details class="analysis-materials"><summary>부품별 재질 보기 <span>'+a.components.length+'개</span></summary><dl>'+components+'</dl></details>':"")+
+  '<footer class="analysis-reference"><p class="analysis-confidence">사진 판단 신뢰도 · '+({high:"높음",medium:"보통",low:"낮음"}[confidence]||"보통")+'</p><strong>분석 결과는 참고용으로 활용해 주세요</strong><p>AI 분석 결과는 실제 물품의 재질·상태와 다를 수 있으며, 배출 기준은 추후 변경될 수 있습니다. 배출 전 광산구·공단의 최신 안내를 확인해 주세요.</p></footer></div>';
+  $("result-panel").hidden=false;$("result-panel").scrollIntoView({behavior:"smooth",block:"start"});
 }
 ["camera-input","upload-input"].forEach(id=>$(id).addEventListener("change",e=>setPhoto(e.target.files&&e.target.files[0])));
 $("remove-photo").addEventListener("click",()=>{photoToken++;currentPhotoDataUrl=null;$("analyze-photo").disabled=true;$("photo-description").disabled=false;$("preview-img").removeAttribute("src");$("preview-wrap").hidden=true;$("upload-empty").hidden=false;$("result-panel").hidden=true;setStatus("");$("camera-input").value="";$("upload-input").value=""});
