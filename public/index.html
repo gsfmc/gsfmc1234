@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/vendor/leaflet.css">
   <link rel="stylesheet" href="/vendor/MarkerCluster.css">
-  <link rel="stylesheet" href="/styles.css?v=readable-results-12">
+  <link rel="stylesheet" href="/styles.css?v=disposal-emphasis-13">
 </head>
 <body>
 <div class="app-shell">
@@ -47,9 +47,10 @@
     </section>
 
     <section id="photo" class="view workspace" hidden>
-      <div class="view-head">
+      <div class="view-head photo-heading">
         <button class="back" type="button" data-open="home" aria-label="홈으로 돌아가기">‹</button>
-        <div><p class="eyebrow">01 · AI 사진 안내</p><h2>사진 찍고 분리배출 확인</h2><p>한 물건이 화면에 크게 보이도록 찍어 주세요.</p></div>
+        <div class="photo-title"><p class="eyebrow">01 · AI 사진 안내</p><h2>사진 찍고 분리배출 확인</h2><p>한 물건이 화면에 크게 보이도록 찍어 주세요.</p></div>
+        <aside class="photo-brief" aria-label="사진 분석 안내"><span class="photo-brief-icon" aria-hidden="true">AI</span><p><strong>사진과 설명을 함께 살펴봐요</strong></p></aside>
       </div>
       <div class="photo-grid">
         <div class="panel upload-panel">
@@ -69,10 +70,6 @@
           </div>
           <p class="privacy-note">선택한 사진과 설명은 분석을 위해 암호화된 연결로 AI 서비스에 전송됩니다. 이 앱은 사진과 설명을 따로 저장하지 않습니다.</p>
           <div id="ai-status" class="status" role="status" aria-live="polite"></div>
-        </div>
-        <div class="panel help-panel">
-          <div class="help-copy"><span class="help-icon">AI</span><div><strong>사진과 설명을 함께 살펴봐요</strong><p>사진에 보이는 재질과 부품, 적어 주신 용도와 상태를 함께 살펴 배출 방법을 안내합니다.</p></div></div>
-          <ol class="mini-steps"><li><b>1</b><span>사진과 설명에서 물건·재질을 확인해요</span></li><li><b>2</b><span>분리해야 할 부품을 찾아요</span></li><li><b>3</b><span>처리 방법과 배출 순서를 안내해요</span></li></ol>
         </div>
       </div>
       <section id="result-panel" class="result-panel" hidden aria-live="polite"></section>
@@ -140,8 +137,8 @@
     <button type="button" data-open="stores"><span>⌖</span>판매소</button>
   </nav>
 </div>
-<script src="/app.js?v=readable-results-12" defer></script>
-<script type="module" src="/schedule.js?v=readable-results-12"></script>
-<script type="module" src="/stores.js?v=readable-results-12"></script>
+<script src="/app.js?v=disposal-emphasis-13" defer></script>
+<script type="module" src="/schedule.js?v=disposal-emphasis-13"></script>
+<script type="module" src="/stores.js?v=disposal-emphasis-13"></script>
 </body>
 </html>
