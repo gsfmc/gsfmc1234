@@ -50,7 +50,7 @@ function initializeSchedule(){
     el("schedule-cards").innerHTML=cards.map(card=>'<article class="panel schedule-card-item'+(card.name===relevant?' is-relevant':'')+'" data-collection="'+card.name+'">'+(card.name===relevant?'<span class="schedule-match">방금 분석한 배출 구분</span>':'')+'<div class="schedule-card-top"><span class="schedule-glyph" aria-hidden="true">'+card.icon+'</span><span class="schedule-day-badge '+(card.info?.today?"today":"")+'">'+(card.info?.label||"지역별로 달라요")+'</span></div><h3>'+card.name+'</h3><strong class="schedule-weekdays">'+card.week+'</strong>'+(card.info&&!card.info.today?'<p class="schedule-next">다음 정기 수거: '+card.info.date+'</p>':"")+'<p class="schedule-card-detail">'+card.detail+'</p></article>').join("");
     const message=el("schedule-linked-message"),matched=cards.find(card=>card.name===relevant);
     if(message)message.textContent=analysis.uncertain?"아직 배출 구분이 확실하지 않아요. 분석 결과의 확인 질문을 먼저 살펴봐 주세요.":analysis.category==="별도배출"?"이 품목은 별도 수거 방법을 따라 주세요. 아래 정기 일정은 생활·음식물·재활용품 안내입니다.":analysis.category==="복합배출"?"분리한 부품마다 해당하는 수거일을 확인해 주세요. 별도배출 부품은 전용 수거 방법을 따라 주세요.":area&&matched?.info?area.name+" · "+relevant+": "+matched.info.label+(matched.info.today?"":" ("+matched.info.date+")")+". 배출 시간도 함께 확인해 주세요.":"동네를 선택하면 "+relevant+" 정기 수거일을 바로 확인할 수 있어요.";
-    el("schedule-store-next").hidden=!analysis;
+    el("schedule-store-next").hidden=false;
   }
   select.addEventListener("change",()=>{locationRequest++;button.disabled=false;flow.setRegion(select.value);status.className="status";status.textContent=select.value?select.value+" 기준입니다. 공휴일과 임시 변경 안내도 확인해 주세요.":"동 또는 산업단지를 선택해 주세요.";render()});
   let boundariesPromise;

@@ -1,11 +1,12 @@
 import {indexStores,searchStores,storesInBounds} from './store-search.js';
+import {pointInGeometry} from './geo.js';
 const STORE_DATA_REVISION='961fb369586a';
 const flow=window.WasteFlow;
 
 const el=id=>document.getElementById(id);
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const distanceLabel=km=>km<1?Math.round(km*1000)+'m':km.toFixed(1)+'km';
-let stores=[],map,clusters,icons,markers=[],selected=null,selectedLayer=null,userPoint=null,userAccuracy=null,locationLayer;
+let stores=[],map,clusters,icons,markers=[],selected=null,selectedLayer=null,userPoint=null,userAccuracy=null,locationLayer,storeBoundaries=[];
 let ready,leafletReady,watch=null,locationTimer=null,locationRun=0;
 function status(text){el('location-status').textContent=text}
 
@@ -26,6 +27,7 @@ async function loadData(){
   const data=await response.json();
   // Road and shop search still work if the optional administrative boundaries fail.
   const features=boundaryResponse?.ok?(await boundaryResponse.json().catch(()=>({features:[]}))).features:[];
+  storeBoundaries=features;
   stores=indexStores(data.items||[],features);
   el('store-source').innerHTML='출처: <a href="'+escape(data.sourceUrl)+'" target="_blank" rel="noopener">공공데이터포털</a> · 기준일 '+escape(data.referenceDate||'확인 필요')+' · 영업 중 '+stores.length+'곳'+(data.verifiedAt?' · 확인 '+escape(data.verifiedAt):'');
   el('store-source').title='포털 수정일 '+(data.sourceModifiedAt||'확인 필요')+' · 최신 자료 확인일 '+(data.verifiedAt||'확인 필요');
@@ -77,6 +79,9 @@ async function ensureMap(){
 function updateLinks(){
   if(!map)return;
   const s=selected===null?null:stores[selected],center=map.getCenter();
+  const area=s?.dong||flow.region?.name||storeBoundaries.find(f=>pointInGeometry([center.lng,center.lat],f.geometry))?.properties.adm_nm.trim().split(/\s+/).at(-1)||'';
+  el('stores-schedule-area').textContent=area?area+' 수거일로 이어서 확인해요.':'지도에서 동네를 찾은 뒤 수거일도 확인해 보세요.';
+  el('stores-schedule').dataset.area=area;
   const point=s?{lat:s.lat,lon:s.lon}:{lat:center.lat,lon:center.lng};
   el('map-open').href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(point.lat+','+point.lon);
   el('map-open').hidden=false;
@@ -198,10 +203,16 @@ async function locateStores(){
   locationTimer=setTimeout(()=>{if(run!==locationRun)return;stopLocation();if(!received)status('위치를 확인하지 못했어요. 동·도로명으로 찾아보세요.')},18000);
 }
 el('use-location').addEventListener('click',locateStores);
+el('stores-schedule').addEventListener('click',()=>{
+  const area=el('stores-schedule').dataset.area;
+  if(area)flow.setRegion(area,'manual');
+  window.openView('schedule');el('schedule').scrollTop=0;
+});
+addEventListener('app:flowchange',()=>{if(map)updateLinks()});
 addEventListener('app:flowopen',async event=>{
   if(event.detail!=='stores')return;
   try{await ensureMap()}catch{return}
-  if(el('stores').hidden||!flow.analysis)return;
+  if(el('stores').hidden)return;
   stopLocation();hideSuggestions();
   const region=flow.region,position=flow.freshPosition();
   if(region?.source==='manual'){

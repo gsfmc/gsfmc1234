@@ -42,9 +42,10 @@ function renderLinkedContext(){
 }
 addEventListener("app:flowchange",renderLinkedContext);
 document.addEventListener("click",event=>{
-  const button=event.target.closest("[data-flow]");if(!button||!window.WasteFlow.analysis)return;
+  const button=event.target.closest("[data-flow]");if(!button)return;
   const target=button.dataset.flow;
   if(target==="result"){
+    if(!window.WasteFlow.analysis)return;
     openView("photo");$("result-panel").scrollIntoView({behavior:"smooth",block:"start"});$("result-panel").querySelector("h3")?.focus({preventScroll:true});return;
   }
   if(!["schedule","stores"].includes(target))return;
@@ -58,7 +59,7 @@ function analysisNextSteps(a){
 }
 function disposalText(value){
   const text=String(value??"");
-  const route=/(?:종량제\s*봉투(?:\s*[(（][^)）]*[)）])?|일반\s*쓰레기|재활용(?:품)?|음식물(?:\s*쓰레기)?|종이(?:류)?|유리(?:병|류)?|캔류?|고철(?:류)?|플라스틱(?:류)?|비닐(?:류)?|불연성\s*(?:폐기물|봉투)|폐건전지\s*수거함|수거함)[^.!?。\n,，]*?(?:배출|버리|넣어|내놓)[^.!?。\n,，]*/gu;
+  const route=window.I18n.locale==='ko'?/(?:종량제\s*봉투(?:\s*[(（][^)）]*[)）])?|일반\s*쓰레기|재활용(?:품)?|음식물(?:\s*쓰레기)?|종이(?:류)?|유리(?:병|류)?|캔류?|고철(?:류)?|플라스틱(?:류)?|비닐(?:류)?|불연성\s*(?:폐기물|봉투)|폐건전지\s*수거함|수거함)[^.!?。\n,，]*?(?:배출|버리|넣어|내놓)[^.!?。\n,，]*/gu:/[^.!?。។\n]*(?:dispose|discard|recycl|general waste|food waste|collection bin|rác|tái chế|thu gom|投放|回收|垃圾|мусор|отход|переработ|выброс|сдайте|бросайте|សំរាម|បោះចោល|កែច្នៃ)[^.!?。។\n]*/giu;
   let html="",cursor=0;
   for(const match of text.matchAll(route)){
     html+=esc(text.slice(cursor,match.index))+'<strong class="disposal-key">'+esc(match[0])+'</strong>';cursor=match.index+match[0].length;
@@ -99,11 +100,12 @@ async function analyzePhoto(dataUrl,token,description){
   setStatus(description?"AI가 사진과 설명을 함께 살펴보고 있어요…":"AI가 사진 속 물건과 재질을 살펴보고 있어요…",false,true);
   $("result-panel").hidden=true;
   try{
-    const res=await fetch("/api/analyze",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({image:dataUrl,description})});
+    const language=window.I18n.locale;
+    const res=await fetch("/api/analyze",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({image:dataUrl,description,language})});
     const data=await res.json().catch(()=>({}));
     if(token!==photoToken)return;
     if(!res.ok)throw new Error(data.message||"분석에 실패했습니다.");
-    renderAnalysis(data,{image:dataUrl,description});
+    renderAnalysis(data,{image:dataUrl,description,language});
     setStatus("분석이 끝났어요. 사진과 실제 물건을 함께 확인해 주세요.");
   }catch(err){
     if(token!==photoToken)return;
@@ -142,14 +144,15 @@ function followUpQuestions(analysis,proposed,asked=[]){
   const part=String(analysis.components?.[0]?.part||"부품").slice(0,35);
   const defaults=[part+" 부분을 분리하기 어려우면 어떻게 하나요?",item+"에 오염이 남아 있어도 배출할 수 있나요?",item+"을 버릴 때 특히 주의할 점이 있나요?","재질 표시가 없으면 무엇을 확인해야 하나요?","종량제봉투에 들어가지 않는 크기면 어떻게 하나요?","깨지거나 날카로운 부분은 어떻게 포장하나요?","배출 방법을 한 문장으로 다시 정리해 주세요.","정확한 배출 기준은 어디에 문의하면 되나요?"];
   const result=[],seen=new Set(asked.map(q=>q.replace(/\s/g,"")));
-  for(const q of [...(Array.isArray(proposed)?proposed:[]),...defaults]){
+  const localizedDefaults=window.I18n.locale==='ko'?defaults:window.I18n.defaultQuestions();
+  for(const q of [...(Array.isArray(proposed)?proposed:[]),...localizedDefaults]){
     if(typeof q!=="string"||!q.trim()||q.length>120)continue;
     const value=q.trim(),key=value.replace(/\s/g,"");if(seen.has(key))continue;seen.add(key);result.push(value);if(result.length===3)break;
   }
   return result;
 }
 function initializeFollowUp(analysis,context){
-  const session={analysis:JSON.parse(JSON.stringify(analysis)),image:context.image,description:context.description||"",history:[],asked:[],busy:false,controller:null,timer:null};
+  const session={analysis:JSON.parse(JSON.stringify(analysis)),image:context.image,description:context.description||"",language:context.language||window.I18n.locale,history:[],asked:[],busy:false,controller:null,timer:null};
   followUpSession=session;
   const suggestions=$("followup-suggestions"),input=$("followup-question"),submit=$("followup-submit"),status=$("followup-status"),messages=$("followup-messages");
   function renderSuggestions(proposed){
@@ -170,7 +173,7 @@ function initializeFollowUp(analysis,context){
     const userMessage=document.createElement("article");userMessage.className="followup-message from-user";userMessage.innerHTML='<span class="followup-message-label">내 질문</span><p>'+esc(question)+'</p>';messages.append(userMessage);
     session.controller=new AbortController();session.timer=setTimeout(()=>session.controller.abort(),55000);
     try{
-      const response=await fetch("/api/follow-up",{method:"POST",headers:{"content-type":"application/json"},signal:session.controller.signal,body:JSON.stringify({image:session.image,description:session.description,analysis:session.analysis,history:session.history.slice(-10),question})});
+      const response=await fetch("/api/follow-up",{method:"POST",headers:{"content-type":"application/json"},signal:session.controller.signal,body:JSON.stringify({image:session.image,description:session.description,analysis:session.analysis,history:session.history.slice(-10),question,language:window.I18n.locale})});
       const data=await response.json().catch(()=>({}));
       if(followUpSession!==session)return;
       if(!response.ok)throw Error(data.message==="AI_SETUP_REQUIRED"?"AI 답변 연결을 준비 중이에요. 잠시 후 다시 질문해 주세요.":data.message||"답변을 받지 못했어요. 다시 질문해 주세요.");

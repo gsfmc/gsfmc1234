@@ -19,10 +19,12 @@ const [html,css,app,schedule,boundaries,worker,stores,storeApp,storeSearch,geo,l
   readFile("public/vendor/markercluster-LICENSE.txt","utf8"),
 ]);
 const normalizedWorker=worker.replace(/\r\n/g,"\n").replace("const STATIC_STORES=null;","const STATIC_STORES="+stores.trim()+";");
+const i18n=await readFile('public/i18n.js','utf8');
 const marker='    if(env.ASSETS)return env.ASSETS.fetch(request);\n    return new Response("Site assets binding is unavailable.",{status:503});';
 if(!normalizedWorker.includes(marker))throw new Error("Static fallback marker is missing.");
 const staticSource=[
   "const STATIC_HTML="+JSON.stringify(html)+";",
+  "const STATIC_I18N="+JSON.stringify(i18n)+";",
   "const STATIC_CSS="+JSON.stringify(css)+";",
   "const STATIC_APP="+JSON.stringify(app)+";",
   "const STATIC_SCHEDULE="+JSON.stringify(schedule)+";",
@@ -39,6 +41,7 @@ const staticSource=[
   "",
 ].join("\n");
 const staticHandler=[
+  '    if(url.pathname==="/i18n.js")return new Response(STATIC_I18N,{headers:{"content-type":"text/javascript; charset=utf-8","cache-control":"no-cache"}});',
   '    if(url.pathname==="/styles.css")return new Response(STATIC_CSS,{headers:{"content-type":"text/css; charset=utf-8","cache-control":"no-cache"}});',
   '    if(url.pathname==="/app.js")return new Response(STATIC_APP,{headers:{"content-type":"text/javascript; charset=utf-8","cache-control":"no-cache"}});',
   '    if(url.pathname==="/schedule.js")return new Response(STATIC_SCHEDULE,{headers:{"content-type":"text/javascript; charset=utf-8","cache-control":"no-cache"}});',
