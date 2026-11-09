@@ -12,6 +12,50 @@ addEventListener("popstate",()=>openView(location.hash.slice(1)||"home",false));
 openView(location.hash.slice(1)||"home",false);
 
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
+function collectionContext(analysis){
+  const category=String(analysis.category||"판단보류");
+  const uncertain=analysis.confidence==="low"||category==="판단보류";
+  return {item:String(analysis.itemName||"방금 분석한 물건"),category,uncertain,
+    collection:uncertain?null:({"일반쓰레기":"생활쓰레기","재활용":"재활용품","음식물":"음식물쓰레기"}[category]||null)};
+}
+// Coordinates, chosen area and analysis context live only in this page's memory.
+window.WasteFlow={
+  analysis:null,region:null,position:null,
+  notify(){dispatchEvent(new CustomEvent("app:flowchange"))},
+  setAnalysis(analysis){this.analysis=analysis?collectionContext(analysis):null;this.notify()},
+  setRegion(name,source="manual"){this.region=name?{name,source}:null;this.notify()},
+  setPosition(position){
+    if(!Number.isFinite(position.lat)||!Number.isFinite(position.lon)||!Number.isFinite(position.accuracy)||position.accuracy>500)return;
+    this.position={...position,at:Date.now()};
+    dispatchEvent(new CustomEvent("app:position",{detail:this.position}));
+  },
+  freshPosition(){return this.position&&Date.now()-this.position.at<300000?this.position:null}
+};
+function renderLinkedContext(){
+  const flow=window.WasteFlow,a=flow.analysis;
+  for(const view of ["schedule","stores"]){
+    const panel=$(view+"-linked-context");panel.hidden=!a;
+    if(!a){panel.innerHTML="";continue}
+    panel.innerHTML='<div class="linked-context-heading"><div><small>방금 분석한 물건 · '+esc(a.category)+'</small><strong>'+esc(a.item)+'</strong></div><button type="button" class="flow-back" data-flow="result">분석 결과로 <span aria-hidden="true">↗</span></button></div>'+
+      (view==="schedule"?'<p id="schedule-linked-message"></p>':'<p>'+(flow.region?esc(flow.region.name)+' 주변에서 ':'')+'봉투가 필요한 경우 가까운 판매소를 확인하세요.</p>');
+  }
+}
+addEventListener("app:flowchange",renderLinkedContext);
+document.addEventListener("click",event=>{
+  const button=event.target.closest("[data-flow]");if(!button||!window.WasteFlow.analysis)return;
+  const target=button.dataset.flow;
+  if(target==="result"){
+    openView("photo");$("result-panel").scrollIntoView({behavior:"smooth",block:"start"});$("result-panel").querySelector("h3")?.focus({preventScroll:true});return;
+  }
+  if(!["schedule","stores"].includes(target))return;
+  openView(target);$(target).scrollTop=0;
+  dispatchEvent(new CustomEvent("app:flowopen",{detail:target}));
+});
+function analysisNextSteps(a){
+  const context=collectionContext(a);
+  const note=context.uncertain?"배출 구분이 아직 확실하지 않아요. 재질과 용도를 먼저 확인한 뒤 일정을 참고해 주세요.":context.category==="별도배출"?"별도배출 품목은 일반 수거 일정에 맞춰 내놓지 말고, 위의 전용 수거 방법을 확인해 주세요.":context.category==="복합배출"?"분리한 부품마다 배출 구분이 달라요. 위 안내와 해당 수거일을 함께 확인해 주세요.":"배출 방법을 확인했다면, 우리동네 수거일과 필요한 봉투를 이어서 찾아보세요.";
+  return '<section class="analysis-next" aria-labelledby="analysis-next-heading"><p class="flow-eyebrow">다음은 배출 준비</p><h4 id="analysis-next-heading">언제, 어디서 준비할까요?</h4><p class="flow-note">'+esc(note)+'</p><div class="flow-actions"><button type="button" data-flow="schedule"><span class="flow-action-icon" aria-hidden="true">▤</span><span><strong>'+(context.collection?esc(context.collection)+' 수거일 확인':'우리동네 수거일 확인')+'</strong><small>선택한 동네의 정기 수거일을 봐요</small></span><b aria-hidden="true">→</b></button><button type="button" data-flow="stores"><span class="flow-action-icon" aria-hidden="true">⌖</span><span><strong>가까운 종량제봉투 판매소</strong><small>'+(context.category==="일반쓰레기"&&!context.uncertain?'배출할 봉투가 필요하면 찾아보세요':'봉투가 필요한 경우에 이용하세요')+'</small></span><b aria-hidden="true">→</b></button></div></section>';
+}
 function disposalText(value){
   const text=String(value??"");
   const route=/(?:종량제\s*봉투(?:\s*[(（][^)）]*[)）])?|일반\s*쓰레기|재활용(?:품)?|음식물(?:\s*쓰레기)?|종이(?:류)?|유리(?:병|류)?|캔류?|고철(?:류)?|플라스틱(?:류)?|비닐(?:류)?|불연성\s*(?:폐기물|봉투)|폐건전지\s*수거함|수거함)[^.!?。\n,，]*?(?:배출|버리|넣어|내놓)[^.!?。\n,，]*/gu;
@@ -36,7 +80,7 @@ async function resizeImage(file){
 async function setPhoto(file){
   if(!file||!file.type.startsWith("image/")){setStatus("이미지 파일을 선택해 주세요.",true);return}
   if(file.size>15*1024*1024){setStatus("사진 용량이 너무 커요. 15MB 이하 사진을 선택해 주세요.",true);return}
-  resetFollowUp();
+  resetFollowUp();window.WasteFlow.setAnalysis(null);
   const token=++photoToken;
   $("analyze-photo").disabled=true;$("photo-description").disabled=false;$("result-panel").hidden=true;
   try{
@@ -50,7 +94,7 @@ async function setPhoto(file){
 }
 function setStatus(text,error=false,busy=false){const el=$("ai-status");el.textContent=text;el.className="status"+(error?" error":"")+(busy?" busy":"")}
 async function analyzePhoto(dataUrl,token,description){
-  resetFollowUp();
+  resetFollowUp();window.WasteFlow.setAnalysis(null);
   $("analyze-photo").disabled=true;$("photo-description").disabled=true;
   setStatus(description?"AI가 사진과 설명을 함께 살펴보고 있어요…":"AI가 사진 속 물건과 재질을 살펴보고 있어요…",false,true);
   $("result-panel").hidden=true;
@@ -85,10 +129,12 @@ function renderAnalysis(a,photoContext){
   (steps?'<section class="analysis-block"><h4>이렇게 나눠서 배출하세요</h4><ol class="analysis-steps">'+steps+'</ol></section>':"")+
   (prep?'<section class="analysis-block analysis-preparation"><h4>배출 전 준비</h4><ul>'+prep+'</ul></section>':"")+
   ((a.warnings||[]).length?'<aside class="analysis-warning"><h4><span aria-hidden="true">!</span> 꼭 주의해 주세요</h4><ul>'+(a.warnings||[]).map(x=>"<li>"+disposalText(x)+"</li>").join("")+'</ul></aside>':"")+
+  analysisNextSteps(a)+
   (components?'<details class="analysis-materials"><summary>부품별 재질 보기 <span>'+a.components.length+'개</span></summary><dl>'+components+'</dl></details>':"")+
   '<footer class="analysis-reference"><p class="analysis-confidence">사진 판단 신뢰도 · '+({high:"높음",medium:"보통",low:"낮음"}[confidence]||"보통")+'</p><strong>분석 결과는 참고용으로 활용해 주세요</strong><p>AI 분석 결과는 실제 물품의 재질·상태와 다를 수 있으며, 배출 기준은 추후 변경될 수 있습니다. 배출 전 광산구·공단의 최신 안내를 확인해 주세요.</p></footer>'+
   '<section class="analysis-followup" aria-labelledby="followup-heading"><h4 id="followup-heading">더 궁금한 점이 있나요?</h4><p class="followup-intro">지금 사진과 분석 내용을 참고해 답해요. 추천 질문을 누르거나 직접 물어보세요.</p><div id="followup-messages" class="followup-messages" role="log" aria-live="polite" aria-relevant="additions"></div><div id="followup-suggestions" class="followup-suggestions" aria-label="추천 질문"></div><form id="followup-form"><label for="followup-question">직접 질문하기</label><textarea id="followup-question" rows="2" maxlength="500" placeholder="예: 손잡이가 분리되지 않으면 어떻게 버려야 하나요?" aria-describedby="followup-status"></textarea><div class="followup-form-bottom"><span>500자 이내</span><button id="followup-submit" class="btn primary" type="submit">질문하기 <span aria-hidden="true">↑</span></button></div><p id="followup-status" class="status" role="status" aria-live="polite"></p></form></section></div>';
   initializeFollowUp(a,photoContext||{image:currentPhotoDataUrl,description:$("photo-description").value.trim()});
+  window.WasteFlow.setAnalysis(a);
   $("result-panel").hidden=false;$("result-panel").scrollIntoView({behavior:"smooth",block:"start"});
 }
 function followUpQuestions(analysis,proposed,asked=[]){
@@ -148,7 +194,7 @@ function initializeFollowUp(analysis,context){
   if(!session.image){input.disabled=true;submit.disabled=true;suggestions.querySelectorAll("button").forEach(button=>button.disabled=true);status.textContent="사진을 분석하면 이어서 질문할 수 있어요."}
 }
 ["camera-input","upload-input"].forEach(id=>$(id).addEventListener("change",e=>setPhoto(e.target.files&&e.target.files[0])));
-$("remove-photo").addEventListener("click",()=>{resetFollowUp();photoToken++;currentPhotoDataUrl=null;$("analyze-photo").disabled=true;$("photo-description").disabled=false;$("preview-img").removeAttribute("src");$("preview-wrap").hidden=true;$("upload-empty").hidden=false;$("result-panel").hidden=true;setStatus("");$("camera-input").value="";$("upload-input").value=""});
+$("remove-photo").addEventListener("click",()=>{resetFollowUp();window.WasteFlow.setAnalysis(null);photoToken++;currentPhotoDataUrl=null;$("analyze-photo").disabled=true;$("photo-description").disabled=false;$("preview-img").removeAttribute("src");$("preview-wrap").hidden=true;$("upload-empty").hidden=false;$("result-panel").hidden=true;setStatus("");$("camera-input").value="";$("upload-input").value=""});
 const drop=$("drop-zone");
 ["dragenter","dragover"].forEach(n=>drop.addEventListener(n,e=>{e.preventDefault();drop.classList.add("drag")}));
 ["dragleave","drop"].forEach(n=>drop.addEventListener(n,e=>{e.preventDefault();drop.classList.remove("drag")}));

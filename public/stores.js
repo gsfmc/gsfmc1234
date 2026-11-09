@@ -1,5 +1,6 @@
 import {indexStores,searchStores,storesInBounds} from './store-search.js';
 const STORE_DATA_REVISION='961fb369586a';
+const flow=window.WasteFlow;
 
 const el=id=>document.getElementById(id);
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -164,8 +165,18 @@ function stopLocation(){
   if(watch!==null){navigator.geolocation.clearWatch(watch);watch=null}
   clearTimeout(locationTimer);locationTimer=null;el('use-location').disabled=false;
 }
-el('use-location').addEventListener('click',async()=>{
+function showPosition({lat,lon,accuracy}){
+  userPoint={lat,lon};userAccuracy=accuracy;
+  if(locationLayer)map.removeLayer(locationLayer);
+  locationLayer=window.L.layerGroup([
+    window.L.circle([lat,lon],{radius:accuracy,color:'#2674df',weight:1,fillOpacity:.08,interactive:false}),
+    window.L.circleMarker([lat,lon],{radius:7,color:'#fff',weight:3,fillColor:'#2674df',fillOpacity:1}).bindTooltip('현재 위치 · 오차 약 '+Math.ceil(accuracy)+'m')
+  ]).addTo(map);
+  map.setView([lat,lon],16,{animate:false});renderViewport();
+}
+async function locateStores(){
   try{await ensureMap()}catch{return}
+  if(el('stores').hidden)return;
   if(!navigator.geolocation){status('이 기기에서는 위치를 사용할 수 없어요. 동·도로명으로 찾아보세요.');return}
   stopLocation();hideSuggestions();input.value='';userPoint=null;userAccuracy=null;
   if(locationLayer){map.removeLayer(locationLayer);locationLayer=null}updateLinks();
@@ -177,13 +188,7 @@ el('use-location').addEventListener('click',async()=>{
     if(!Number.isFinite(lat)||!Number.isFinite(lon)||!Number.isFinite(accuracy)||accuracy>=best)return;
     received=true;best=accuracy;
     if(accuracy>500){status('위치 오차가 약 '+Math.ceil(accuracy)+'m로 커요. 동·도로명 검색을 이용해 주세요.');return}
-    userPoint={lat,lon};userAccuracy=accuracy;
-    if(locationLayer)map.removeLayer(locationLayer);
-    locationLayer=window.L.layerGroup([
-      window.L.circle([lat,lon],{radius:accuracy,color:'#2674df',weight:1,fillOpacity:.08,interactive:false}),
-      window.L.circleMarker([lat,lon],{radius:7,color:'#fff',weight:3,fillColor:'#2674df',fillOpacity:1}).bindTooltip('현재 위치 · 오차 약 '+Math.ceil(accuracy)+'m')
-    ]).addTo(map);
-    map.setView([lat,lon],16,{animate:false});renderViewport();
+    showPosition({lat,lon,accuracy});flow.setPosition({lat,lon,accuracy,source:'stores'});
     status('파란 점이 내 위치예요 · 위치 오차 약 '+Math.ceil(accuracy)+'m. 지도를 움직여 주변을 확인하세요.');
     if(accuracy<=80)stopLocation();
   },error=>{
@@ -191,6 +196,23 @@ el('use-location').addEventListener('click',async()=>{
     if(!userPoint)status(error.code===1?'위치 권한이 꺼져 있어요. 권한을 허용하거나 동·도로명으로 찾아보세요.':'위치를 확인하지 못했어요. 동·도로명으로 찾아보세요.');
   },{enableHighAccuracy:true,maximumAge:0,timeout:15000});
   locationTimer=setTimeout(()=>{if(run!==locationRun)return;stopLocation();if(!received)status('위치를 확인하지 못했어요. 동·도로명으로 찾아보세요.')},18000);
+}
+el('use-location').addEventListener('click',locateStores);
+addEventListener('app:flowopen',async event=>{
+  if(event.detail!=='stores')return;
+  try{await ensureMap()}catch{return}
+  if(el('stores').hidden||!flow.analysis)return;
+  stopLocation();hideSuggestions();
+  const region=flow.region,position=flow.freshPosition();
+  if(region?.source==='manual'){
+    input.value=region.name;await searchAddress();return;
+  }
+  if(position){
+    input.value='';showPosition(position);
+    status('앞서 확인한 위치를 이어서 보여드려요 · 오차 약 '+Math.ceil(position.accuracy)+'m. 위치가 달라졌다면 내 위치로 찾기를 눌러 주세요.');return;
+  }
+  if(region){input.value=region.name;await searchAddress();return}
+  locateStores();
 });
 addEventListener('pagehide',stopLocation);
 addEventListener('app:viewchange',event=>{if(event.detail==='stores')ensureMap().catch(()=>{});else{stopLocation();hideSuggestions()}});
