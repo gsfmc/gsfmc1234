@@ -1,18 +1,17 @@
 /* Fixed interface translations. AI prose is returned in the requested language. */
 const LANGUAGE_OPTIONS=[{code:'ko',name:'한국어',tag:'KO'},{code:'vi',name:'Tiếng Việt',tag:'VN'},{code:'zh-CN',name:'中文（简体）',tag:'CN'},{code:'ru',name:'Русский',tag:'RU'},{code:'en',name:'English',tag:'EN'},{code:'km',name:'ខ្មែរ',tag:'KH'}];
 const COPY=[
-['광산 생활배출 길잡이','Gwangsan Waste Guide','Hướng dẫn rác Gwangsan','光山垃圾分类指南','Утилизация отходов Квансан','មគ្គុទ្ទេសក៍សំរាម Gwangsan'],
-['광산 생활배출','Gwangsan Waste Guide','Rác Gwangsan','光山垃圾指南','Отходы Квансан','សំរាម Gwangsan'],
-['버릴 때 바로 보는 길잡이','Your everyday disposal guide','Hướng dẫn bỏ rác hằng ngày','随时查看的投放指南','Как правильно выбрасывать','ណែនាំការបោះចោលប្រចាំថ្ងៃ'],
+['광산 버릴지도','Gwangsan Disposal Map','Bản đồ bỏ rác Gwangsan','光山区垃圾投放地图','Карта утилизации Квансана','ផែនទីបោះចោលសំរាម Gwangsan'],
+['광산구 분리배출 안내 서비스','Gwangsan District Recycling Guide','Hướng dẫn phân loại rác quận Gwangsan','光山区垃圾分类指南','Руководство по раздельному сбору в Квансан','សេវាណែនាំការបំបែកសំរាមនៅ Gwangsan'],
 ['공단 안내','Official guide','Hướng dẫn chính thức','官方指南','Официальная информация','ការណែនាំផ្លូវការ'],
 ['언어 선택 / Language','Choose language','Chọn ngôn ngữ','选择语言','Выбрать язык','ជ្រើសរើសភាសា'],
 ['언어를 선택해 주세요','Choose your language','Vui lòng chọn ngôn ngữ','请选择语言','Выберите язык','សូមជ្រើសរើសភាសា'],
 ['새로운 사진 분석과 추가 질문 답변도 선택한 언어로 안내해요.','New photo results and follow-up answers use your selected language.','Kết quả ảnh và câu trả lời mới sẽ dùng ngôn ngữ bạn chọn.','新的照片分析及追问回答也将使用所选语言。','Новые результаты анализа и ответы будут на выбранном языке.','លទ្ធផលវិភាគរូបថត និងចម្លើយថ្មីនឹងប្រើភាសាដែលអ្នកបានជ្រើសរើស។'],
 ['닫기','Close','Đóng','关闭','Закрыть','បិទ'],
-['광산구 생활폐기물 안내','Waste disposal in Gwangsan','Bỏ rác tại Gwangsan','光山区生活垃圾指南','Вывоз отходов в Квансан','ការបោះចោលសំរាមនៅ Gwangsan'],
 ['이거 어떻게 버리지?','How do I dispose of this?','Bỏ món này thế nào?','这个该怎么扔？','Как это выбросить?','តើត្រូវបោះចោលវាយ៉ាងដូចម្តេច?'],
-['사진 한 장이면 돼요.','Start with a photo.','Bắt đầu bằng một bức ảnh.','拍张照片就能开始。','Начните с фотографии.','ចាប់ផ្តើមដោយរូបថតមួយ។'],
-['사진 속 물건과 재질을 AI가 직접 살펴보고, 분리 순서까지 쉽게 설명해 드려요.','AI examines the item and materials, then explains how to separate and dispose of them.','AI xem vật dụng và chất liệu trong ảnh, rồi hướng dẫn cách tháo tách và bỏ rác.','AI识别照片中的物品和材质，并说明拆分和投放步骤。','ИИ определит предмет и материалы и объяснит порядок разборки и утилизации.','AI ពិនិត្យវត្ថុ និងសម្ភារៈក្នុងរូបថត ហើយណែនាំរបៀបបំបែក និងបោះចោល។'],
+['광산구 버릴지도','Gwangsan District Disposal Map','Bản đồ bỏ rác quận Gwangsan','光山区垃圾投放地图','Карта утилизации района Квансан','ផែនទីបោះចោលសំរាមខណ្ឌ Gwangsan'],
+['올바른 분리배출은 똑똑하게 지도하고,','Smart guidance for sorting waste correctly,','Hướng dẫn thông minh để phân loại rác đúng cách,','智能引导您正确分类投放垃圾，','Поможем правильно сортировать отходы,','ណែនាំយ៉ាងឆ្លាតវៃអំពីការបំបែកសំរាមឱ្យបានត្រឹមត្រូវ,'],
+['가까운 종량제봉투 판매소는 지도에서 찾아드려요.','and find nearby official trash bag shops on the map.','và tìm điểm bán túi rác gần bạn trên bản đồ.','并在地图上找到附近的计量垃圾袋销售点。','и найдём на карте ближайшие магазины специальных пакетов.','ហើយស្វែងរកហាងលក់ថង់សំរាមជិតអ្នកនៅលើផែនទី។'],
 ['핵심 기능','Photo AI','AI ảnh','核心功能','Фото с ИИ','វិភាគរូបថត'],
 ['사진 찍고','Take a photo','Chụp ảnh','拍照','Сфотографируйте','ថតរូប'],
 ['분리배출 확인','Check disposal','Xem cách phân loại','查看分类方法','Узнайте, как выбросить','មើលវិធីបោះចោល'],
@@ -300,7 +299,7 @@ function setLocale(value){
   try{localStorage.setItem('gwangsan-language',locale)}catch{}
   document.getElementById('language-current').textContent=LANGUAGE_OPTIONS.find(option=>option.code===locale).name;
   document.querySelectorAll('[data-language]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.language===locale)));
-  document.title=translate('광산 생활배출 길잡이');applyTranslations();
+  document.title=translate('광산 버릴지도');applyTranslations();
   dispatchEvent(new CustomEvent('app:languagechange',{detail:locale}));
 }
 const DEFAULT_QUESTIONS=['분리되지 않는 부분은 어떻게 버리나요?','오염이 남아 있으면 어떻게 하나요?','버릴 때 특히 주의할 점은 무엇인가요?','재질 표시가 없으면 무엇을 확인하나요?','봉투에 들어가지 않는 크기라면 어떻게 하나요?','깨진 부분은 어떻게 포장하나요?','배출 방법을 짧게 정리해 주세요.','정확한 지역 기준은 어디에 문의하나요?'];
