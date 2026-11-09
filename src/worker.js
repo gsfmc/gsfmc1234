@@ -1,6 +1,19 @@
 const STATIC_STORES=null;
 const OUTPUT_LANGUAGES={ko:'Korean (한국어)',vi:'Vietnamese (Tiếng Việt)','zh-CN':'Simplified Chinese (简体中文)',ru:'Russian (Русский)',en:'English',km:'Khmer (ភាសាខ្មែរ)'};
 function languageInstruction(language){return '모든 자유서술 값과 추천 질문은 '+OUTPUT_LANGUAGES[language]+'로 작성하세요. 다른 언어로 된 이전 분석이나 질문이 있어도 현재 지정 언어로 답하세요. JSON 필드명, confidence enum, category enum은 스키마의 원래 값을 유지하세요. 한국의 종량제봉투 등은 해당 언어로 풀어 설명하고, 필요한 경우 원래 한국어 용어를 괄호에 병기하세요. 동네·상호·주소 등 고유명사는 원문을 보존하세요.'}
+async function requestGemini(endpoint,options,operation){
+  const signal=AbortSignal.timeout(45000);
+  for(let attempt=0;attempt<2;attempt++){
+    const response=await fetch(endpoint,{...options,signal});
+    if(response.ok)return response;
+    // Log status only: never log API keys, photos, descriptions or provider bodies.
+    console.warn('Gemini upstream failure',JSON.stringify({operation,status:response.status,attempt:attempt+1}));
+    if(attempt===0&&[404,500,502,503,504].includes(response.status)){
+      await response.body?.cancel();await new Promise(resolve=>setTimeout(resolve,750));continue;
+    }
+    return response;
+  }
+}
 const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{"content-type":"application/json; charset=utf-8","cache-control":"no-store"}});
 
 export default {
@@ -64,10 +77,10 @@ async function analyze(request,env){
   const endpoint="https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent";
   let response;
   try{
-    response=await fetch(endpoint,{method:"POST",headers:{"content-type":"application/json","x-goog-api-key":env.GEMINI_API_KEY},body:JSON.stringify({
+    response=await requestGemini(endpoint,{method:"POST",headers:{"content-type":"application/json","x-goog-api-key":env.GEMINI_API_KEY},body:JSON.stringify({
       contents:[{role:"user",parts:[{text:prompt},{inlineData:{mimeType:match[1],data:match[2]}},{text:description?"사용자가 제공한 물품 설명: "+JSON.stringify(description):"사용자가 제공한 추가 설명은 없습니다."}]}],
       generationConfig:{responseMimeType:"application/json",responseSchema:schema,temperature:.2,maxOutputTokens:4500}
-    })});
+    })},'analyze');
   }catch{return json({message:"AI 서비스에 연결하지 못했어요."},502)}
   const result=await response.json().catch(()=>({}));
   if(!response.ok){
@@ -121,7 +134,7 @@ async function followUp(request,env){
   const model=env.GEMINI_MODEL||"gemini-3.5-flash";
   let response;
   try{
-    response=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent",{method:"POST",headers:{"content-type":"application/json","x-goog-api-key":env.GEMINI_API_KEY},signal:AbortSignal.timeout(45000),body:JSON.stringify({systemInstruction:{parts:[{text:instruction}]},contents,generationConfig:{responseMimeType:"application/json",responseSchema:schema,temperature:.2,maxOutputTokens:3000}})});
+    response=await requestGemini("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent",{method:"POST",headers:{"content-type":"application/json","x-goog-api-key":env.GEMINI_API_KEY},body:JSON.stringify({systemInstruction:{parts:[{text:instruction}]},contents,generationConfig:{responseMimeType:"application/json",responseSchema:schema,temperature:.2,maxOutputTokens:3000}})},'follow-up');
   }catch{return json({message:"답변 연결이 지연되고 있어요. 잠시 후 다시 질문해 주세요."},502)}
   const result=await response.json().catch(()=>({}));
   if(!response.ok)return json({message:response.status===429?"질문 요청이 잠시 몰렸어요. 잠시 후 다시 시도해 주세요.":"추가 질문에 답하지 못했어요. 잠시 후 다시 시도해 주세요."},response.status===429?429:502);

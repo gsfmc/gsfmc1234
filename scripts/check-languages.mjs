@@ -40,5 +40,9 @@ try{
     assert.equal((await worker.fetch(request('follow-up',{image,language,analysis,question:'Q?'}),env,{})).status,400);
   }
   assert.equal(calls,baseline);
+  let transientCalls=0;
+  globalThis.fetch=async()=>++transientCalls===1?Response.json({error:{message:'provider private details'}},{status:503}):Response.json({candidates:[{content:{parts:[{text:JSON.stringify(analysis)}]}}]});
+  assert.equal((await worker.fetch(request('analyze',{image,language:'vi'}),env,{})).status,200);
+  assert.equal(transientCalls,2);
 }finally{globalThis.fetch=original}
 console.log('PASS: '+rows.length+' complete six-language UI entries, template arguments, collection dates, all six AI language prompts, stable category enum and invalid-language rejection.');
