@@ -11,19 +11,6 @@ document.querySelectorAll("[data-open]").forEach(b=>b.addEventListener("click",e
 addEventListener("popstate",()=>openView(location.hash.slice(1)||"home",false));
 openView(location.hash.slice(1)||"home",false);
 
-const fallbackGuides=[
- {name:"우산",kind:"일반쓰레기·별도배출",summary:"천, 비닐과 금속 살을 가능한 만큼 분리하세요.",steps:[["천·비닐","살대에서 떼기","손을 다치지 않도록 장갑을 끼고 분리해 일반쓰레기로 배출하세요."],["금속 살대","고철로 분리","완전히 분리한 금속은 지역 재활용 배출 기준에 따라 내놓으세요."],["손잡이·몸통","크기 확인","분리가 어렵거나 종량제봉투에 들어가지 않으면 대형폐기물 기준을 확인하세요."]],warning:"부러진 살대 끝은 종이나 테이프로 감싸 주세요."},
- {name:"칫솔",kind:"일반쓰레기",summary:"여러 재질이 단단히 붙어 있어 보통 일반쓰레기로 배출합니다.",steps:[["전체","종량제봉투","물기를 말린 뒤 일반 종량제봉투에 넣으세요."]],warning:"전동칫솔은 배터리를 분리해 폐건전지 수거함에 배출하세요."},
- {name:"보조배터리",kind:"별도배출",summary:"리튬 배터리는 종량제봉투나 재활용품에 넣지 않습니다.",steps:[["전체","폐건전지 수거함","단자를 테이프로 막고 동 행정복지센터·공동주택 등의 폐건전지 수거함에 배출하세요."]],warning:"부풀거나 뜨거운 제품은 누르거나 뚫지 말고 소방서·지자체 안내를 확인하세요."},
- {name:"깨진 화분",kind:"일반쓰레기·별도배출",summary:"재질과 크기에 따라 방법이 달라집니다.",steps:[["흙","이물질 제거","식물과 흙을 완전히 비우세요."],["도자기·유리 조각","안전하게 포장","신문지나 상자에 싸서 깨짐 표시 후 불연성 폐기물 기준을 확인하세요."],["플라스틱 화분","재질 표시 확인","깨끗이 씻고 단일 플라스틱이면 재활용, 오염·혼합 재질이면 일반쓰레기로 배출하세요."]],warning:"깨진 조각은 수거 작업자가 다치지 않도록 단단히 감싸 주세요."},
- {name:"장난감",kind:"일반쓰레기·재활용·별도배출",summary:"건전지, 금속, 플라스틱을 가능한 만큼 나눕니다.",steps:[["건전지·배터리","먼저 분리","폐건전지 수거함에 별도 배출하세요."],["금속 부품","분리 가능하면 고철","나사 등 큰 금속 부품을 분리하세요."],["본체","재질과 크기 확인","복합재질 소형 장난감은 일반쓰레기, 큰 장난감은 대형폐기물 기준을 확인하세요."]],warning:"소리 나는 장난감에는 단추형 전지가 남아 있을 수 있습니다."},
- {name:"프라이팬",kind:"재활용·별도배출",summary:"손잡이와 본체를 분리할 수 있으면 재질별로 나눕니다.",steps:[["음식물·기름","깨끗이 제거","키친타월로 닦고 세척해 말리세요."],["손잡이","분리","나사로 분리되는 플라스틱·나무 손잡이는 일반쓰레기로 배출하세요."],["금속 본체","고철","공동주택 고철 수거함 또는 지역 재활용 기준에 따라 배출하세요."]],warning:"코팅이 벗겨져도 금속 본체는 고철로 분류할 수 있으나 지역 기준을 확인하세요."},
- {name:"텀블러",kind:"재활용·일반쓰레기",summary:"뚜껑, 고무 패킹과 금속 몸통을 분리하세요.",steps:[["뚜껑·패킹","분리","실리콘 패킹과 복합재질 뚜껑은 일반쓰레기로 배출하세요."],["몸통","비우고 세척","금속 단일 재질이면 고철류로 배출하세요."]],warning:"진공 단열 텀블러는 구멍을 뚫지 마세요."},
- {name:"전선",kind:"재활용·별도배출",summary:"소형 폐가전 수거함이나 전선류 수거 기준을 이용하세요.",steps:[["플러그·어댑터","함께 모으기","잘라내지 말고 소형 폐가전 수거함에 배출하세요."],["전선","묶어서 배출","지역에서 전선류를 받는 재활용 거점에 배출하세요."]],warning:"피복을 태우거나 벗기지 마세요."},
- {name:"스프레이통",kind:"재활용",summary:"내용물을 완전히 사용한 뒤 환기가 잘 되는 곳에서 배출 준비를 합니다.",steps:[["내용물","끝까지 사용","불꽃이 없는 환기 장소에서 남은 내용물을 완전히 빼세요."],["용기","지역 기준 확인","구멍을 요구하지 않는 지역도 있으므로 광산구 최신 기준을 확인한 뒤 캔류로 배출하세요."]],warning:"불 근처에서 가스를 빼거나 임의로 찌르지 마세요."},
- {name:"배달용기",kind:"재활용·일반쓰레기",summary:"내용물과 기름기를 제거하고 용기·뚜껑·필름을 나눕니다.",steps:[["남은 음식","비우기","음식물 분류 기준에 따라 따로 배출하세요."],["용기·뚜껑","씻고 말리기","재질 표시가 있고 깨끗하면 같은 재질끼리 배출하세요."],["필름·오염된 부분","분리","씻기 어려운 양념·기름 오염 용기는 일반쓰레기로 배출하세요."]],warning:"검은색·복합재질 용기는 선별이 어려울 수 있어 지역 기준을 확인하세요."}
-];
-
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
 function disposalText(value){
   const text=String(value??"");
@@ -34,23 +21,6 @@ function disposalText(value){
   }
   return html+esc(text.slice(cursor));
 }
-function renderManual(item){
-  resetFollowUp();
-  $("result-panel").classList.remove("readable-result");
-  $("result-panel").innerHTML='<div class="result-hero"><div><p class="result-kicker">직접 선택한 품목</p><h3>'+esc(item.name)+'</h3><p class="result-summary">'+esc(item.summary)+'</p></div><div class="badges"><span class="badge">배출 구분 · '+esc(item.kind)+'</span></div></div><div class="result-section"><h4>이렇게 나눠서 배출하세요</h4><div class="guide-steps">'+item.steps.map((s,i)=>'<article class="guide-step"><small>'+String(i+1).padStart(2,"0")+' · '+esc(s[0])+'</small><strong>'+esc(s[1])+'</strong><p>'+esc(s[2])+'</p></article>').join("")+'</div></div><div class="notice"><strong>주의사항</strong> · '+esc(item.warning)+'</div>';
-  $("result-panel").hidden=false;
-  $("result-panel").scrollIntoView({behavior:"smooth",block:"nearest"});
-}
-$("popular-list").innerHTML=fallbackGuides.map((g,i)=>'<button class="chip" type="button" data-guide="'+i+'">'+esc(g.name)+'</button>').join("");
-$("popular-list").addEventListener("click",e=>{const b=e.target.closest("[data-guide]");if(b)renderManual(fallbackGuides[Number(b.dataset.guide)])});
-$("item-search").addEventListener("input",e=>{
-  const q=e.target.value.trim(); const box=$("search-results");
-  if(!q){box.innerHTML="";return}
-  const found=fallbackGuides.map((g,i)=>({g,i})).filter(x=>x.g.name.includes(q)).slice(0,5);
-  box.innerHTML=found.length?found.map(x=>'<button class="search-result" type="button" data-guide="'+x.i+'">'+esc(x.g.name)+'</button>').join(""):'<p class="privacy-note">일치하는 품목이 없어요. 사진으로 분석해 보세요.</p>';
-});
-$("search-results").addEventListener("click",e=>{const b=e.target.closest("[data-guide]");if(b)renderManual(fallbackGuides[Number(b.dataset.guide)])});
-
 let photoToken=0,currentPhotoDataUrl=null,followUpSession=null;
 function resetFollowUp(){
   if(followUpSession){followUpSession.controller?.abort();clearTimeout(followUpSession.timer)}
