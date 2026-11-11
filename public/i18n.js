@@ -1,5 +1,5 @@
 /* Fixed interface translations. AI prose is returned in the requested language. */
-const LANGUAGE_OPTIONS=[{code:'ko',name:'한국어',tag:'KO'},{code:'vi',name:'Tiếng Việt',tag:'VN'},{code:'zh-CN',name:'中文（简体）',tag:'CN'},{code:'ru',name:'Русский',tag:'RU'},{code:'en',name:'English',tag:'EN'},{code:'km',name:'ខ្មែរ',tag:'KH'}];
+const LANGUAGE_OPTIONS=[{code:'ko',name:'한국어',korean:'한국어',tag:'KO'},{code:'vi',name:'Tiếng Việt',korean:'베트남어',tag:'VN'},{code:'zh-CN',name:'中文（简体）',korean:'중국어(간체)',tag:'CN'},{code:'ru',name:'Русский',korean:'러시아어',tag:'RU'},{code:'en',name:'English',korean:'영어',tag:'EN'},{code:'km',name:'ខ្មែរ',korean:'크메르어(캄보디아어)',tag:'KH'}];
 const COPY=[
 ['광산 버릴지도','Gwangsan Disposal Map','Bản đồ bỏ rác Gwangsan','光山区垃圾投放地图','Карта утилизации Квансана','ផែនទីបោះចោលសំរាម Gwangsan'],
 ['광산구 분리배출 안내 서비스','Gwangsan District Recycling Guide','Hướng dẫn phân loại rác quận Gwangsan','光山区垃圾分类指南','Руководство по раздельному сбору в Квансан','សេវាណែនាំការបំបែកសំរាមនៅ Gwangsan'],
@@ -305,8 +305,8 @@ function setLocale(value){
 const DEFAULT_QUESTIONS=['분리되지 않는 부분은 어떻게 버리나요?','오염이 남아 있으면 어떻게 하나요?','버릴 때 특히 주의할 점은 무엇인가요?','재질 표시가 없으면 무엇을 확인하나요?','봉투에 들어가지 않는 크기라면 어떻게 하나요?','깨진 부분은 어떻게 포장하나요?','배출 방법을 짧게 정리해 주세요.','정확한 지역 기준은 어디에 문의하나요?'];
 window.I18n={get locale(){return locale},t:translate,setLocale,apply:applyTranslations,languages:LANGUAGE_OPTIONS,defaultQuestions:()=>DEFAULT_QUESTIONS.map(translate)};
 const dialog=document.getElementById('language-dialog');
-document.getElementById('language-options').innerHTML=LANGUAGE_OPTIONS.map(option=>'<button type="button" data-language="'+option.code+'" lang="'+option.code+'" translate="no"><span>'+option.tag+'</span><strong>'+option.name+'</strong><b aria-hidden="true">✓</b></button>').join('');
-for(const id of ['language-open','home-language'])document.getElementById(id).addEventListener('click',()=>{dialog.showModal();dialog.querySelector('[aria-pressed="true"]')?.focus()});
+document.getElementById('language-options').innerHTML=LANGUAGE_OPTIONS.map(option=>'<button type="button" data-language="'+option.code+'" translate="no"><span>'+option.tag+'</span><span class="language-option-name"><strong lang="ko">'+option.korean+'</strong>'+(option.code==='ko'?'':'<small lang="'+option.code+'">'+option.name+'</small>')+'</span><b aria-hidden="true">✓</b></button>').join('');
+document.getElementById('language-open').addEventListener('click',()=>{dialog.showModal();dialog.querySelector('[aria-pressed="true"]')?.focus()});
 document.getElementById('language-close').addEventListener('click',()=>dialog.close());
 dialog.addEventListener('click',event=>{const button=event.target.closest('[data-language]');if(button){setLocale(button.dataset.language);dialog.close()}else if(event.target===dialog&&event.offsetX<0)dialog.close()});
 setLocale(locale);
