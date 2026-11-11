@@ -20,10 +20,12 @@ const [html,css,app,schedule,boundaries,worker,stores,storeApp,storeSearch,geo,l
 ]);
 const normalizedWorker=worker.replace(/\r\n/g,"\n").replace("const STATIC_STORES=null;","const STATIC_STORES="+stores.trim()+";");
 const i18n=await readFile('public/i18n.js','utf8');
+const agencyCi=await readFile('public/assets/gsfmc-ci-ko.png');
 const marker='    if(env.ASSETS)return env.ASSETS.fetch(request);\n    return new Response("Site assets binding is unavailable.",{status:503});';
 if(!normalizedWorker.includes(marker))throw new Error("Static fallback marker is missing.");
 const staticSource=[
   "const STATIC_HTML="+JSON.stringify(html)+";",
+  "const STATIC_AGENCY_CI="+JSON.stringify(agencyCi.toString('base64'))+";",
   "const STATIC_I18N="+JSON.stringify(i18n)+";",
   "const STATIC_CSS="+JSON.stringify(css)+";",
   "const STATIC_APP="+JSON.stringify(app)+";",
@@ -41,6 +43,7 @@ const staticSource=[
   "",
 ].join("\n");
 const staticHandler=[
+  '    if(url.pathname==="/assets/gsfmc-ci-ko.png")return new Response(Uint8Array.from(atob(STATIC_AGENCY_CI),character=>character.charCodeAt(0)),{headers:{"content-type":"image/png","cache-control":"public, max-age=86400"}});',
   '    if(url.pathname==="/i18n.js")return new Response(STATIC_I18N,{headers:{"content-type":"text/javascript; charset=utf-8","cache-control":"no-cache"}});',
   '    if(url.pathname==="/styles.css")return new Response(STATIC_CSS,{headers:{"content-type":"text/css; charset=utf-8","cache-control":"no-cache"}});',
   '    if(url.pathname==="/app.js")return new Response(STATIC_APP,{headers:{"content-type":"text/javascript; charset=utf-8","cache-control":"no-cache"}});',
