@@ -118,3 +118,7 @@ html:not([lang=ko]) .home-view{overflow:auto}html:not([lang=ko]) .feature-card{o
 @media(max-width:800px) and (max-height:730px){#stores{padding-top:8px;padding-bottom:8px}#stores:has(.stores-schedule) .map-panel{min-height:130px;flex-basis:130px}#stores .map-head{min-height:50px;padding:7px 10px}#stores #map-address{display:none}#stores .linked-context{padding:4px 10px}#stores .flow-back{min-height:32px;padding:5px 9px}#stores .stores-schedule{padding:6px 10px}#stores .map-store-count{font-size:10px;line-height:1.45}}
 .agency-ci{display:block;width:min(300px,76%);height:auto;margin:0 0 22px;object-fit:contain}
 @media(max-width:800px){.agency-ci{width:min(220px,66vw);margin-bottom:10px}.home-view .hero{padding-bottom:12px}}
+.schedule-cards{align-items:start}
+.schedule-card-item .schedule-store-next{grid-column:1/-1;flex-direction:column;align-items:stretch;gap:9px;padding:12px;margin-top:14px;border-radius:11px;background:#f1f8f4}
+.schedule-card-item .schedule-store-next p{font-size:13px}
+.schedule-card-item .schedule-store-next .btn{width:100%;min-height:40px;padding:9px 11px;font-size:.78rem}
